@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OAK Invoicing — Modern Excel-Based Tool</title>
+  
+  <!-- Tailwind CSS for modern styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- SheetJS for Excel import/export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    // Configuration for Tailwind CSS Dark Mode and Custom Theme
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            accent: {
+              DEFAULT: '#b8860b',
+              light: '#d4ac0d',
+              dark: '#9c6f09'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Custom styles for a polished look */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    #print-stamp { display: none; }
+    /* Print-specific styles */
+    @media print {
+      body { 
+        background-color: white !important; 
+        font-size: 10pt;
+      }
+      .no-print { display: none !important; }
+      .print-only-flex { display: flex !important; }
+      .print-only-block { display: block !important; }
+      .print-shadow-none { box-shadow: none !important; }
+      .print-border-none { border: none !important; }
+      .print-p-0 { padding: 0 !important; }
+      .print-w-full { width: 100% !important; }
+      .print-max-w-none { max-width: none !important; }
+      .print-m-0 { margin: 0 !important; }
+      input, textarea, select { 
+        border-color: transparent !important; 
+        background-color: white !important; 
+        -webkit-appearance: none; 
+        -moz-appearance: none; 
+        appearance: none; 
+        padding: 0; 
+        color: black !important;
+        font-size: 10pt;
+      }
+      textarea { resize: none !important; }
+      #app-card {
+        border-radius: 0;
+        position: relative;
+        box-shadow: none;
+      }
+      #print-stamp { 
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        border: 8px solid;
+        padding: 1.5rem 3rem;
+        border-radius: 0.5rem;
+        font-size: 6rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        opacity: 0.15;
+        user-select: none;
+        z-index: 10;
+      }
+      .print-bg-transparent { background-color: transparent !important; }
+      tr, .totals-section > div {
+        page-break-inside: avoid;
+      }
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .dark ::-webkit-scrollbar-track { background: #1e293b; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
+
+  <!-- Main container -->
+  <div id="main-container" class="mx-auto p-4 md:p-8 print-max-w-none print-m-0 transition-all duration-300">
+    <div id="app-card" data-print-status="" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg print-shadow-none transition-colors duration-300 relative overflow-hidden">
+      
+      <!-- STATUS Stamp for Print -->
+      <div id="print-stamp">STAMP</div>
+      
+      <div class="p-6 md:p-8 print-p-0">
+        
+        <!-- START: Print-Only Header -->
+        <div class="hidden print-only-flex mb-12 justify-between items-start">
+            <div>
+                <img id="print-logo" src="" alt="Company Logo" class="w-32 h-auto max-h-24 object-contain">
+            </div>
+            <div class="text-right text-xs text-gray-600">
+                <p class="font-bold text-base text-gray-800">OAK Builders LLC</p>
+                <p>123 Construction Way</p>
+                <p>Fairfax, VA 22030, USA</p>
+                <p>info@oakllc.co</p>
+                <p>(202) 888-9895</p>
+                <p>www.oakllc.co</p>
+            </div>
+        </div>
+        <!-- END: Print-Only Header -->
+
+        <!-- Header Section -->
+        <header class="pb-6 border-b border-slate-200 dark:border-slate-700 print-border-none">
+          <div class="flex flex-wrap items-center justify-between gap-6">
+            <!-- Brand Info -->
+            <div class="flex items-center gap-4 no-print">
+              <img id="ui-logo" src="https://placehold.co/80x80/b8860b/FFFFFF?text=OAK" alt="Company Logo" class="w-20 h-20 h-auto object-contain bg-slate-100 dark:bg-slate-700 rounded-lg">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">OAK Builders LLC</h2>
+                <input type="file" id="logoPicker" class="hidden" accept="image/*">
+                <button data-action="uploadLogo" class="text-xs font-semibold text-accent dark:text-accent-light hover:underline">Upload Logo</button>
+              </div>
+            </div>
+            <!-- Document Type -->
+            <div class="flex items-center gap-3">
+              <h1 id="docTitle" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white print:text-4xl print:text-gray-800">Invoice</h1>
+              <select id="docType" class="no-print bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
+            </div>
+          </div>
+          
+          <!-- Toolbar -->
+          <div class="no-print mt-6 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-2">
+                <input id="filePicker" type="file" accept=".xlsx" class="hidden" />
+                <button data-action="loadExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Load from Excel</button>
+                <button data-action="saveExcel" class="px-4 py-2 text-sm font-semibold text-slate-900 bg-accent hover:bg-accent-light rounded-lg transition-colors">Save to Excel</button>
+              </div>
+              <div class="flex items-center gap-2">
+                 <div class="flex items-center gap-2">
+                    <label for="stampType" class="text-xs font-semibold text-slate-500">PDF Stamp</label>
+                    <select id="stampType" class="bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
+                 </div>
+                 <button onclick="window.print()" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Print / PDF</button>
+                 
+                 <!-- View Mode Switcher -->
+                 <div class="ml-2 flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-700 rounded-lg">
+                    <button data-action="setView" data-view="pc" class="p-2 rounded-md transition-colors" title="PC View">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 0H2.5A1.5 1.5 0 0 0 1 1.5v8A1.5 1.5 0 0 0 2.5 11h3.5v2H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-1v-2h3.5A1.5 1.5 0 0 0 15 9.5v-8A1.5 1.5 0 0 0 13.5 0zM2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-8z"/></svg>
+                    </button>
+                    <button data-action="setView" data-view="tablet" class="p-2 rounded-md transition-colors" title="Tablet View">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM4 1a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V1z"/><path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                    </button>
+                    <button data-action="setView" data-view="mobile" class="p-2 rounded-md transition-colors" title="Mobile View">
+                       <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/><path d="M7 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                    </button>
+                </div>
+
+                 <button id="theme-toggle" data-action="toggleTheme" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                    <svg id="theme-icon-light" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                 </button>
+              </div>
+          </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="mt-8">
+          <div class="flex flex-col md:flex-row justify-between gap-8">
+              
+              <!-- Bill To Section -->
+              <section class="w-full md:w-1/2">
+                <label for="billTo" class="text-xs font-semibold text-slate-500 dark:text-slate-400 print:text-gray-500">Bill to</label>
+                <textarea id="billTo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent min-h-[110px]" placeholder="Client name&#10;Company&#10;Email · Phone&#10;Address"></textarea>
+              </section>
+
+              <!-- Details Section -->
+              <section class="w-full md:w-1/2">
+                <!-- Print Details Table -->
+                <table class="w-full hidden print-only-block mb-8">
+                    <tbody>
+                        <tr class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Invoice #</td><td id="printInvNo" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
+                        <tr class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Date</td><td id="printInvDate" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
+                        <tr id="printDueWrap" class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Due Date</td><td id="printDueDate" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
+                    </tbody>
+                </table>
+                  
+                <!-- Interactive Form -->
+                <div class="grid grid-cols-2 gap-6 no-print">
+                    <div>
+                      <label for="invNo" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Invoice / Estimate #</label>
+                      <input id="invNo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" placeholder="e.g., 0001" />
+                    </div>
+                     <div>
+                      <label for="status" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</label>
+                      <select id="status" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
+                    </div>
+                    <div>
+                      <label for="invDate" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Date</label>
+                      <input id="invDate" type="date" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" />
+                    </div>
+                    <div id="dueWrap">
+                      <label for="dueIn" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Due Date</label>
+                      <select id="dueIn" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
+                    </div>
+                    <div id="paidWrap" class="col-span-2">
+                      <div class="flex items-center justify-between">
+                        <label for="paid" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Amount Paid</label>
+                        <button data-action="togglePayments" class="no-print text-xs font-semibold text-accent dark:text-accent-light">Track Payments</button>
+                      </div>
+                      <input id="paid" type="text" value="$0.00" class="mt-1 block w-full bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" readonly />
+                      <div id="paymentTracker" class="hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"></div>
+                    </div>
+                </div>
+                 <div class="no-print">
+                     <label for="recId" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Record ID</label>
+                     <input id="recId" class="mt-1 block w-full bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" placeholder="Auto-generated" readonly />
+                 </div>
+              </section>
+          </div>
+
+          <!-- Items Table -->
+          <section class="mt-10">
+            <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 print-border-none">
+              <table class="w-full" id="items">
+                <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase text-slate-500 dark:text-slate-400 print:bg-gray-200 print:text-gray-600">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-semibold">Item</th>
+                    <th class="px-4 py-3 text-right font-semibold w-24">Qty</th>
+                    <th class="px-4 py-3 text-right font-semibold w-32">Rate</th>
+                    <th class="px-4 py-3 text-right font-semibold w-32">Amount</th>
+                    <th class="px-4 py-3 text-center font-semibold w-12 no-print"></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="no-print mt-4 flex items-center gap-2">
+              <button data-action="addRow" class="px-3 py-1.5 text-sm font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md transition-colors">+ Add Item</button>
+              <button data-action="clearAll" class="px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/80 rounded-md transition-colors">Clear All</button>
+            </div>
+          </section>
+
+          <!-- Notes, Attachments, and Totals -->
+          <section class="mt-10 grid lg:grid-cols-2 gap-12">
+            <div>
+              <div>
+                <label for="notes" class="text-xs font-semibold text-slate-500 dark:text-slate-400 print:text-gray-500">Notes</label>
+                <textarea id="notes" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" placeholder="Thanks for your business."></textarea>
+              </div>
+              <div class="mt-6 no-print">
+                <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300">Attachments (backed up in Excel)</h3>
+                <div class="mt-2">
+                  <input id="attachPicker" type="file" multiple class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent-dark dark:file:bg-accent/20 dark:file:text-accent-light hover:file:bg-accent/20"/>
+                  <div id="attachments" class="mt-3 space-y-2"></div>
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Large files will increase workbook size. PDFs are recommended.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Totals Section -->
+            <div class="space-y-4 totals-section">
+               <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Subtotal</span>
+                        <span id="subtotal" class="font-semibold text-slate-700 dark:text-slate-200 print:text-gray-800">$0.00</span>
+                    </div>
+
+                    <!-- Dynamic Adjustments: Bond, OH, Profit -->
+                    <div id="adjustments"></div>
+
+                    <div class="flex justify-between items-center">
+                      <div class="flex items-center gap-2">
+                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Tax</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <input id="taxRate" type="number" min="0" step="0.01" value="0" class="w-20 text-right bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print">
+                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600" id="printTaxRate">0%</span>
+                      </div>
+                    </div>
+                     <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-500 dark:text-slate-400 pl-4 print:text-gray-600">Tax amount</span>
+                        <span id="tax" class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-800">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span class="text-slate-800 dark:text-white print:text-gray-800">Total</span>
+                        <span id="total" class="text-slate-800 dark:text-white print:text-gray-800">$0.00</span>
+                    </div>
+                     <div class="flex justify-between items-center font-semibold">
+                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Amount Paid</span>
+                        <span id="paidTotal" class="text-slate-700 dark:text-slate-200 print:text-gray-800">$0.00</span>
+                    </div>
+                    <div id="balanceRow" class="flex justify-between items-center font-semibold text-accent-dark dark:text-accent-light print:bg-yellow-100 print:p-2 print:rounded-md">
+                        <span class="print:text-yellow-800">Balance Due</span>
+                        <span id="due" class="print:text-yellow-800">$0.00</span>
+                    </div>
+                </div>
+            </div>
+          </section>
+
+        </main>
+        
+        <!-- START: Print-Only Footer -->
+        <div class="hidden print-only-block mt-24 pt-8 border-t border-gray-300 text-xs text-gray-600">
+            <div class="grid grid-cols-3 gap-8">
+                <div class="col-span-2">
+                    <h4 class="font-semibold text-gray-700 mb-1">Payment Terms</h4>
+                    <p id="paymentTerms">Payment is due upon receipt. Late payments are subject to a service charge of 1.5% per month on all outstanding balances.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-1">Payment Methods</h4>
+                    <p>Zelle: payments@oakllc.co</p>
+                    <p>Venmo: @oak-builders</p>
+                </div>
+            </div>
+            <p class="text-center mt-12">Thank you for your business!</p>
+        </div>
+        <!-- END: Print-Only Footer -->
+      </div>
+      <footer class="no-print p-4 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700/50">
+          Invoice/Estimate template with Excel repository • Enhanced by Gemini
+      </footer>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="notification" class="no-print fixed top-5 right-5 w-80 p-4 rounded-lg shadow-xl text-white bg-slate-800 transform translate-x-[150%] transition-transform duration-300 ease-in-out">
+    <p id="notification-message"></p>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ---------- Utilities ----------
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+    const fmt = n => (isNaN(n) ? 0 : n).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    const todayISO = () => new Date().toISOString().slice(0, 10);
+    const genId = (type) => `${type === 'Estimate' ? 'EST' : 'INV'}-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
+    const truthy = (v) => {
+        if (typeof v === 'boolean') return v;
+        if (typeof v === 'number') return v !== 0;
+        if (typeof v === 'string') return /^(true|t|1|yes|y)$/i.test(v.trim());
+        return false;
+    };
+    const toNum = (v) => { 
+        if (typeof v === 'string') v = v.replace(/[$,]/g, '');
+        const n = parseFloat(v);
+        return isNaN(n) ? 0 : n;
+    };
+    const round2 = (n) => Math.round((toNum(n)) * 100) / 100;
+    const isoAddDays = (iso, d) => { 
+        if (!iso) return '';
+        const dt = new Date(iso);
+        dt.setUTCDate(dt.getUTCDate() + toNum(d));
+        return dt.toISOString().slice(0, 10);
+    };
+
+    // ---------- State Management ----------
+    let state = getInitialState();
+    let lastWorkbook = null;
+
+    function getInitialState() {
+        return {
+            type: 'Invoice',
+            id: '',
+            number: '',
+            status: 'Draft',
+            date: todayISO(),
+            dueInDays: 15,
+            payments: [], // { date, amount, method }
+            showPaymentTracker: false,
+            billTo: '',
+            notes: 'Thanks for your business.',
+            items: [{ desc: '', qty: 1, rate: 0, usesSub: false, subs: [] }],
+            adjustments: [
+                { id: 'bond', label: 'Bond', enabled: false, pct: 10 },
+                { id: 'oh', label: 'Overhead', enabled: false, pct: 15 },
+                { id: 'profit', label: 'Profit', enabled: false, pct: 10 },
+            ],
+            taxPct: 0,
+            attachments: [], // {filename, mime, base64, size}
+            logoDataUrl: null,
+            stampType: 'None'
+        };
+    }
+    
+    // Completely replaces the state and triggers a full re-render.
+    function setStateAndRender(newState) {
+        state = newState;
+        render();
+    }
+
+    function normalizeItem(it) {
+        if (!it || typeof it !== 'object') return { desc: '', qty: 1, rate: 0, usesSub: false, subs: [] };
+        return {
+            desc: String(it.desc ?? ''),
+            qty: toNum(it.qty),
+            rate: toNum(it.rate),
+            usesSub: truthy(it.usesSub),
+            subs: Array.isArray(it.subs) ? it.subs.map(s => ({
+                desc: String(s?.desc ?? ''),
+                qty: toNum(s?.qty),
+                rate: toNum(s?.rate)
+            })) : []
+        };
+    }
+
+    function normalizeState() {
+        if (!Array.isArray(state.items) || state.items.length === 0) {
+            state.items = [{ desc: '', qty: 1, rate: 0, usesSub: false, subs: [] }];
+        }
+        state.items = state.items.map(it => normalizeItem(it));
+        if (!Array.isArray(state.payments)) {
+            state.payments = [];
+        }
+    }
+
+
+    // ---------- Rendering Engine ----------
+    function render() {
+        normalizeState();
+        // Full UI redraws - necessary when structure changes (e.g., adding/deleting items)
+        renderHeader();
+        renderItems();
+        renderPayments();
+        renderAdjustments();
+        renderAttachments();
+        // Calculation and painting of values - can be called separately for performance
+        calculateAndPaintTotals();
+        renderPrintViews(); 
+    }
+    
+    function renderHeader() {
+        $('#docType').value = state.type;
+        $('#docTitle').textContent = state.type;
+        $('#recId').value = state.id;
+        $('#invNo').value = state.number;
+        $('#status').value = state.status;
+        $('#invDate').value = state.date;
+        $('#dueIn').value = String(state.dueInDays);
+        $('#billTo').value = state.billTo;
+        $('#notes').value = state.notes;
+        $('#taxRate').value = state.taxPct;
+        $('#stampType').value = state.stampType;
+        
+        const isInv = state.type === 'Invoice';
+        $('#dueWrap').classList.toggle('hidden', !isInv);
+        $('#paidWrap').classList.toggle('hidden', !isInv);
+        $('#balanceRow').classList.toggle('hidden', !isInv);
+        
+        $('#ui-logo').src = state.logoDataUrl || 'https://placehold.co/80x80/b8860b/FFFFFF?text=OAK';
+        $('#print-logo').src = state.logoDataUrl || 'https://placehold.co/128x128/b8860b/FFFFFF?text=OAK';
+    }
+    
+    function lineAmount(it) {
+        if (!it) return 0;
+        if (it.usesSub && Array.isArray(it.subs) && it.subs.length > 0) {
+            return it.subs.reduce((s, si) => s + (toNum(si.qty) * toNum(si.rate)), 0);
+        }
+        return toNum(it.qty) * toNum(it.rate);
+    }
+
+    function renderItems() {
+        const tbody = $('#items tbody');
+        tbody.innerHTML = state.items.map((it, idx) => `
+            <tr class="border-b border-slate-200 dark:border-slate-700 last:border-b-0 print:border-gray-300">
+                <td class="px-4 py-3 align-top">
+                    <input class="w-full bg-transparent focus:outline-none" placeholder="Item description" value="${it.desc}" data-idx="${idx}" data-field="desc">
+                    ${it.usesSub ? renderSubItems(it, idx) : ''}
+                    <div class="no-print mt-2">
+                        <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                            <input type="checkbox" ${it.usesSub ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50" data-idx="${idx}" data-action="toggleSub">
+                            Use sub-items
+                        </label>
+                    </div>
+                </td>
+                <td class="px-4 py-3 align-top"><input type="number" min="0" value="${it.qty}" ${it.usesSub ? 'disabled' : ''} class="w-24 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="qty"></td>
+                <td class="px-4 py-3 align-top"><input type="number" min="0" step="0.01" value="${it.rate}" ${it.usesSub ? 'disabled' : ''} class="w-32 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="rate"></td>
+                <td class="px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800" data-role="line-amount">${fmt(lineAmount(it))}</td>
+                <td class="px-4 py-3 align-top text-center no-print"><button class="text-slate-400 hover:text-red-500" data-action="delItem" data-idx="${idx}">✕</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    function renderSubItems(item, itemIdx) {
+        const subsHTML = (item.subs || []).map((si, sidx) => `
+            <div class="grid grid-cols-[1fr,auto,auto,auto,auto] gap-2 items-center text-sm">
+                <input class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${si.desc}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
+                <input type="number" min="0" value="${si.qty}" class="w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
+                <input type="number" min="0" step="0.01" value="${si.rate}" class="w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
+                <span class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-700 text-right pr-1" data-role="sub-line-amount">${fmt(toNum(si.qty) * toNum(si.rate))}</span>
+                <button class="text-slate-400 hover:text-red-500 text-xs no-print" data-action="delSubItem" data-idx="${itemIdx}" data-sidx="${sidx}">✕</button>
+            </div>
+        `).join('');
+        return `
+            <div class="mt-2 pl-4 border-l-2 border-slate-200 dark:border-slate-600 space-y-2 print:border-gray-200">
+                ${subsHTML}
+                 <button class="no-print text-xs text-accent dark:text-accent-light font-semibold" data-action="addSubItem" data-idx="${itemIdx}">+ Add sub-item</button>
+            </div>
+        `;
+    }
+
+    function renderPayments() {
+        const container = $('#paymentTracker');
+        container.classList.toggle('hidden', !state.showPaymentTracker);
+        if (!state.showPaymentTracker) return;
+
+        const tableContent = state.payments.length > 0 ? `
+            <div class="space-y-2">
+                ${state.payments.map((p, idx) => `
+                    <div class="grid grid-cols-[auto,1fr,auto,auto] gap-2 items-center text-sm">
+                        <input type="date" value="${p.date}" class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="date">
+                        <input type="text" value="${p.method}" placeholder="Method" class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="method">
+                        <input type="number" value="${p.amount}" class="w-24 text-right bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="amount">
+                        <button class="text-slate-400 hover:text-red-500 text-xs" data-action="delPayment" data-idx="${idx}">✕</button>
+                    </div>
+                `).join('')}
+            </div>
+        ` : `<p class="text-xs text-slate-500 text-center">No payments recorded.</p>`;
+        
+        container.innerHTML = `
+            ${tableContent}
+            <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                 <button data-action="addPayment" class="px-3 py-1 w-full font-semibold text-accent-dark dark:text-accent-light bg-accent/20 hover:bg-accent/30 rounded-md transition-colors">Add Payment</button>
+            </div>
+        `;
+    }
+
+    function renderAdjustments() {
+        const container = $('#adjustments');
+        container.innerHTML = state.adjustments.map((adj, idx) => `
+             <div class="border-t border-slate-200 dark:border-slate-700 pt-2 print:border-gray-200">
+                <div class="flex justify-between items-center">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" ${adj.enabled ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50 no-print" data-adj-idx="${idx}" data-action="toggleAdj">
+                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">${adj.label}</span>
+                    </label>
+                    ${adj.enabled ? `
+                    <div class="flex items-center gap-2">
+                      <input type="number" min="0" step="0.01" value="${adj.pct}" class="w-20 text-right bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print" data-adj-idx="${idx}" data-field="pct">
+                      <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">${adj.pct}%</span>
+                    </div>` : ''}
+                </div>
+                ${adj.enabled ? `
+                <div class="flex justify-between items-center text-sm mt-1">
+                    <span class="text-slate-500 dark:text-slate-400 pl-4 print:text-gray-600">${adj.label} amount</span>
+                    <span id="${adj.id}Amt" class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-800">$0.00</span>
+                </div>` : ''}
+            </div>
+        `).join('');
+    }
+    
+    function renderAttachments() {
+        const list = $('#attachments');
+        list.innerHTML = state.attachments.map((a, i) => `
+            <div class="flex items-center justify-between gap-3 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-sm">
+                <div class="truncate">
+                    <strong class="font-medium text-slate-700 dark:text-slate-200">${a.filename}</strong> 
+                    <span class="text-slate-500 dark:text-slate-400 text-xs">(${a.mime}, ${Math.round(a.size/1024)} KB)</span>
+                </div>
+                <button class="text-slate-400 hover:text-red-500" data-action="delAttachment" data-idx="${i}">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function renderPrintViews() {
+        $('#printInvNo').textContent = state.number;
+        $('#printInvDate').textContent = state.date;
+        const dueDate = isoAddDays(state.date, state.dueInDays);
+        $('#printDueDate').textContent = dueDate;
+        $('#printTaxRate').textContent = `${state.taxPct}%`;
+        $('#printDueWrap').classList.toggle('hidden', state.type !== 'Invoice');
+
+        const dueDays = toNum(state.dueInDays);
+        const term = dueDays > 0 ? `Payment is due within ${dueDays} days.` : 'Payment is due upon receipt.';
+        $('#paymentTerms').textContent = `${term} Late payments are subject to a service charge of 1.5% per month on all outstanding balances.`;
+        
+        const stampEl = $('#print-stamp');
+        if (state.stampType !== 'None') {
+            stampEl.textContent = state.stampType.toUpperCase();
+            stampEl.classList.remove('text-green-600', 'border-green-600', 'text-red-600', 'border-red-600', 'text-gray-600', 'border-gray-600');
+            switch (state.stampType) {
+                case 'Paid': stampEl.classList.add('text-green-600', 'border-green-600'); break;
+                case 'Overdue': stampEl.classList.add('text-red-600', 'border-red-600'); break;
+                default: stampEl.classList.add('text-gray-600', 'border-gray-600'); break;
+            }
+        }
+        stampEl.style.display = state.stampType === 'None' ? 'none' : 'block';
+    }
+
+    function calculateAndPaintTotals() {
+        const totalPaid = state.payments.reduce((sum, p) => sum + toNum(p.amount), 0);
+        $('#paid').value = fmt(totalPaid);
+        $('#paidTotal').textContent = fmt(totalPaid);
+
+        let subtotal = state.items.reduce((s, it) => s + lineAmount(it), 0);
+        let currentBase = subtotal;
+        
+        state.adjustments.forEach(adj => {
+            const adjAmt = adj.enabled ? currentBase * (toNum(adj.pct) / 100) : 0;
+            const el = $(`#${adj.id}Amt`);
+            if (el) el.textContent = fmt(adjAmt);
+            currentBase += adjAmt;
+        });
+        
+        const taxBase = currentBase;
+        const taxAmt = taxBase * (toNum(state.taxPct) / 100);
+        const total = taxBase + taxAmt;
+        const due = Math.max(total - (state.type === 'Invoice' ? totalPaid : 0), 0);
+        
+        $('#subtotal').textContent = fmt(subtotal);
+        $('#tax').textContent = fmt(taxAmt);
+        $('#total').textContent = fmt(total);
+        $('#due').textContent = fmt(due);
+
+        // Update individual line item and sub-item amounts in the DOM
+        $$('#items tbody tr').forEach((row, i) => {
+            const item = state.items[i];
+            if (!item) return;
+            const amountEl = row.querySelector('[data-role="line-amount"]');
+            if (amountEl) amountEl.textContent = fmt(lineAmount(item));
+            if (item.usesSub && item.subs) {
+                $$('[data-role="sub-line-amount"]', row).forEach((subEl, j) => {
+                    const subItem = item.subs[j];
+                    if (subItem) subEl.textContent = fmt(toNum(subItem.qty) * toNum(subItem.rate));
+                });
+            }
+        });
+    }
+    
+    // ---------- Event Handling ----------
+    function setupEventListeners() {
+        const app = $('#app-card');
+        app.addEventListener('input', handleLiveUpdate);
+        app.addEventListener('click', handleClick);
+        app.addEventListener('change', handleStructuralChange);
+        app.addEventListener('submit', handleFormSubmit);
+
+        $('#filePicker').addEventListener('change', handleFileLoad);
+        $('#logoPicker').addEventListener('change', handleLogoUpload);
+    }
+    
+    function handleLiveUpdate(e) {
+        const target = e.target;
+        const { idx, sidx, field, subField, adjIdx, payIdx, payField } = target.dataset;
+
+        let requiresRecalc = false;
+
+        if (payIdx !== undefined && payField) {
+            state.payments[payIdx][payField] = target.type === 'number' ? toNum(target.value) : target.value;
+            requiresRecalc = true;
+        } else if (field && idx !== undefined) { 
+            state.items[idx][field] = target.type === 'number' ? toNum(target.value) : target.value;
+            requiresRecalc = true;
+        } else if (subField && idx !== undefined && sidx !== undefined) {
+            state.items[idx].subs[sidx][subField] = target.type === 'number' ? toNum(target.value) : target.value;
+            requiresRecalc = true;
+        } else if (field === 'pct' && adjIdx !== undefined) { 
+             state.adjustments[adjIdx].pct = toNum(target.value);
+             requiresRecalc = true;
+        } else {
+            const id = target.id;
+            if (id === 'invNo') state.number = target.value;
+            else if (id === 'billTo') state.billTo = target.value;
+            else if (id === 'notes') state.notes = target.value;
+            else if (id === 'taxRate') {
+                state.taxPct = toNum(target.value);
+                requiresRecalc = true;
+            }
+        }
+        
+        if (requiresRecalc) {
+            calculateAndPaintTotals();
+        }
+    }
+    
+    function handleStructuralChange(e) {
+        const target = e.target;
+        const { action, idx, adjIdx } = target.dataset;
+        let needsRerender = false;
+
+        if (action === 'toggleSub') {
+            state.items[idx].usesSub = target.checked;
+            if (state.items[idx].usesSub && !state.items[idx].subs) state.items[idx].subs = [];
+            needsRerender = true;
+        } else if (action === 'toggleAdj') {
+            state.adjustments[adjIdx].enabled = target.checked;
+            needsRerender = true;
+        } else {
+            const id = target.id;
+            if (id === 'docType' || id === 'status' || id === 'dueIn' || id === 'invDate' || id === 'stampType') {
+                if (id === 'docType') state.type = target.value;
+                if (id === 'status') state.status = target.value;
+                if (id === 'dueIn') state.dueInDays = toNum(target.value);
+                if (id === 'invDate') state.date = target.value;
+                if (id === 'stampType') state.stampType = target.value;
+                needsRerender = true;
+            }
+        }
+        
+        if(needsRerender) render();
+    }
+
+    function handleClick(e) {
+        const target = e.target.closest('button');
+        if (!target) return;
+        const { action, idx, sidx } = target.dataset;
+
+        let needsRerender = false;
+        switch (action) {
+            case 'uploadLogo': $('#logoPicker').click(); break;
+            case 'loadExcel': $('#filePicker').click(); break;
+            case 'saveExcel': handleFileSave(); break;
+            case 'toggleTheme': toggleTheme(); break;
+            case 'setView': setViewMode(target.dataset.view); break;
+            case 'addRow':
+                state.items.push(getInitialState().items[0]);
+                needsRerender = true;
+                break;
+            case 'clearAll':
+                if (confirm('Are you sure you want to clear all items?')) {
+                    state.items = getInitialState().items;
+                    needsRerender = true;
+                }
+                break;
+            case 'delItem':
+                state.items.splice(idx, 1);
+                if (state.items.length === 0) state.items.push(getInitialState().items[0]);
+                needsRerender = true;
+                break;
+            case 'addSubItem':
+                if (!state.items[idx].subs) state.items[idx].subs = [];
+                state.items[idx].subs.push({ desc: '', qty: 1, rate: 0 });
+                needsRerender = true;
+                break;
+            case 'delSubItem':
+                state.items[idx].subs.splice(sidx, 1);
+                needsRerender = true;
+                break;
+            case 'addPayment':
+                state.payments.push({ date: todayISO(), amount: 0, method: 'New Payment' });
+                needsRerender = true;
+                break;
+            case 'delPayment':
+                state.payments.splice(idx, 1);
+                needsRerender = true;
+                break;
+            case 'togglePayments':
+                state.showPaymentTracker = !state.showPaymentTracker;
+                needsRerender = true;
+                break;
+            case 'delAttachment':
+                state.attachments.splice(idx, 1);
+                needsRerender = true;
+                break;
+        }
+
+        if (needsRerender) {
+            render();
+        }
+    }
+    
+    function handleFormSubmit(e) { e.preventDefault(); }
+    
+    async function handleLogoUpload(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            const dataUrl = await fileToDataUrl(file);
+            state.logoDataUrl = dataUrl;
+            localStorage.setItem('savedLogo', dataUrl);
+            renderHeader();
+            showNotification('Logo updated!', 'success');
+        } catch (error) {
+            showNotification('Could not read logo file.', 'error');
+        }
+    }
+    
+    async function handleAttachmentChange(e) {
+        for (const f of e.target.files || []) {
+            try {
+                const base64 = await fileToBase64(f);
+                state.attachments.push({ filename: f.name, mime: f.type, base64, size: f.size });
+            } catch (error) {
+                showNotification(`Error reading ${f.name}.`, 'error');
+            }
+        }
+        e.target.value = ''; // Reset picker
+        renderAttachments();
+    }
+    
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    function fileToDataUrl(file) {
+         return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    // ---------- Excel Import/Export (Workbook generation) ----------
+    function handleFileSave() {
+        if(!window.XLSX) { showNotification('Excel library not available.', 'error'); return; }
+        const wb = generateWorkbook();
+        const fname = `repository_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        XLSX.writeFile(wb, fname);
+        lastWorkbook = wb;
+        showNotification(`Saved to ${fname}`, 'success');
+    }
+
+    async function handleFileLoad(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!window.XLSX) { showNotification('Excel library not loaded.', 'error'); return; }
+
+        try {
+            const data = await file.arrayBuffer();
+            const wb = XLSX.read(data, { type: 'array' });
+            lastWorkbook = wb;
+            const recs = sheetToJSON(wb, 'Records');
+            if (!recs.length) { showNotification('No records found in workbook.', 'warn'); return; }
+
+            let id = recs[0].id;
+            if (recs.length > 1) {
+                const msg = 'Multiple records found. Enter an ID to load:\n' + recs.map(r => `${r.id} — ${r.type} #${r.number}`).join('\n');
+                const typed = prompt(msg, recs[0].id);
+                if (typed) id = typed; else return;
+            }
+            loadRecordFromWorkbook(wb, id);
+
+        } catch (error) {
+            showNotification('Failed to process Excel file.', 'error');
+        } finally {
+            e.target.value = ''; // Reset picker
+        }
+    }
+    
+    function generateWorkbook() {
+        const wb = lastWorkbook || XLSX.utils.book_new();
+        if(!state.id) state.id = genId(state.type);
+        const stateId = String(state.id).trim();
+
+        const existingRecs = sheetToJSON(wb, 'Records');
+        const existingLI = sheetToJSON(wb, 'LineItems');
+        const existingSI = sheetToJSON(wb, 'SubItems');
+        const existingAT = sheetToJSON(wb, 'Attachments');
+        const existingPayments = sheetToJSON(wb, 'Payments');
+
+        const totalPaid = state.payments.reduce((sum, p) => sum + toNum(p.amount), 0);
+        let subtotal = state.items.reduce((s, it) => s + lineAmount(it), 0);
+        let currentBase = subtotal;
+        let adjAmounts = {};
+        state.adjustments.forEach(adj => {
+            const adjAmt = adj.enabled ? currentBase * (toNum(adj.pct) / 100) : 0;
+            adjAmounts[`${adj.id}_amount`] = round2(adjAmt);
+            currentBase += adjAmt;
+        });
+        const taxAmt = round2(currentBase * (toNum(state.taxPct) / 100));
+        const total = round2(currentBase + taxAmt);
+        const balance = state.type === 'Invoice' ? Math.max(total - totalPaid, 0) : total;
+
+        const bt = (state.billTo || '').split('\n');
+        const client_name = bt[0] || '';
+        const client_company = bt[1] || '';
+        const [client_email = '', client_phone = ''] = (bt[2] || '').split('·').map(s => s.trim());
+        const client_address = bt[3] || '';
+
+        const recordRow = {
+            id: state.id, type: state.type, number: state.number, date: state.date,
+            due_date: state.type === 'Invoice' ? isoAddDays(state.date, state.dueInDays) : '',
+            client_name, client_company, client_email, client_phone, client_address,
+            notes: state.notes, status: state.status,
+            subtotal: round2(subtotal),
+            bond_percent: state.adjustments.find(a => a.id === 'bond').enabled ? state.adjustments.find(a => a.id === 'bond').pct : 0,
+            bond_amount: adjAmounts.bond_amount,
+            overhead_percent: state.adjustments.find(a => a.id === 'oh').enabled ? state.adjustments.find(a => a.id === 'oh').pct : 0,
+            overhead_amount: adjAmounts.oh_amount,
+            profit_percent: state.adjustments.find(a => a.id === 'profit').enabled ? state.adjustments.find(a => a.id === 'profit').pct : 0,
+            profit_amount: adjAmounts.profit_amount,
+            tax_percent: state.taxPct, tax_amount: taxAmt,
+            total,
+            paid: round2(totalPaid),
+            balance: round2(balance),
+            attachments_count: state.attachments.length,
+            created_at: existingRecs.find(r => String(r.id).trim() === stateId)?.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
+        const otherRecs = existingRecs.filter(r => String(r.id).trim() !== stateId);
+        const newRecs = [...otherRecs, recordRow];
+
+        const otherLI = existingLI.filter(r => String(r.record_id).trim() !== stateId);
+        const newLI = state.items.map((it, i) => ({
+            record_id: state.id, line_no: i + 1, description: it.desc,
+            qty: it.usesSub ? '' : round2(it.qty), rate: it.usesSub ? '' : round2(it.rate),
+            amount: round2(lineAmount(it)), uses_subitems: !!it.usesSub
+        }));
+
+        const otherSI = existingSI.filter(r => String(r.record_id).trim() !== stateId);
+        const newSI = state.items.flatMap((it, i) => (it.subs || []).map((s, siIdx) => ({
+            record_id: state.id, line_no: i + 1, subline_no: siIdx + 1,
+            description: s.desc, qty: round2(s.qty), rate: round2(s.rate),
+            amount: round2(toNum(s.qty) * toNum(s.rate))
+        })));
+        
+        const otherPayments = existingPayments.filter(p => String(p.record_id).trim() !== stateId);
+        const newPayments = state.payments.map(p => ({
+            record_id: state.id, date: p.date, amount: round2(p.amount), method: p.method
+        }));
+
+        const otherAT = existingAT.filter(r => String(r.record_id).trim() !== stateId);
+        const newAT = state.attachments.map(a => ({
+            record_id: state.id, filename: a.filename, mime_type: a.mime,
+            base64: a.base64, size_bytes: a.size || (a.base64 ? Math.floor(a.base64.length * 3 / 4) : 0)
+        }));
+
+        writeSheet(wb, 'Records', newRecs);
+        writeSheet(wb, 'LineItems', [...otherLI, ...newLI]);
+        writeSheet(wb, 'SubItems', [...otherSI, ...newSI]);
+        writeSheet(wb, 'Payments', [...otherPayments, ...newPayments]);
+        writeSheet(wb, 'Attachments', [...otherAT, ...newAT]);
+        writeSheet(wb, 'Meta', [{ key: 'schema_version', value: '1.5' }, { key: 'exported_at_utc', value: new Date().toISOString() }]);
+        
+        return wb;
+    }
+    
+    function sheetToJSON(wb, sheetName) {
+        const ws = wb.Sheets[sheetName];
+        if (!ws) return [];
+        return XLSX.utils.sheet_to_json(ws, { defval: '' });
+    }
+    
+    function loadRecordFromWorkbook(wb, recId) {
+        const rec = sheetToJSON(wb, 'Records').find(x => String(x.id).trim() === String(recId).trim());
+        if (!rec) {
+            showNotification(`Record not found: ${recId}`, 'error');
+            return;
+        }
+        lastWorkbook = wb; // Store the loaded workbook
+        const payments = sheetToJSON(wb, 'Payments');
+        const lineItems = sheetToJSON(wb, 'LineItems');
+        const subItems = sheetToJSON(wb, 'SubItems');
+        const attachments = sheetToJSON(wb, 'Attachments');
+
+        const newState = getInitialState();
+        newState.type = rec.type || 'Invoice';
+        newState.id = rec.id || '';
+        newState.number = rec.number || '';
+        newState.status = rec.status || 'Draft';
+        newState.date = rec.date || todayISO();
+        newState.dueInDays = (rec.due_date && rec.date) ? Math.round(Math.max(0, (new Date(rec.due_date) - new Date(rec.date)) / 86400000)) : 15;
+        
+        newState.billTo = [rec.client_name, rec.client_company, [rec.client_email, rec.client_phone].filter(Boolean).join(' · '), rec.client_address].filter(Boolean).join('\n');
+        newState.notes = rec.notes || '';
+        newState.taxPct = toNum(rec.tax_percent);
+
+        newState.payments = payments.filter(p => String(p.record_id).trim() === recId)
+            .map(p => ({ date: p.date, amount: toNum(p.amount), method: p.method }))
+            .sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        newState.adjustments.find(a => a.id === 'bond').pct = toNum(rec.bond_percent);
+        newState.adjustments.find(a => a.id === 'bond').enabled = toNum(rec.bond_percent) > 0;
+        newState.adjustments.find(a => a.id === 'oh').pct = toNum(rec.overhead_percent);
+        newState.adjustments.find(a => a.id === 'oh').enabled = toNum(rec.overhead_percent) > 0;
+        newState.adjustments.find(a => a.id === 'profit').pct = toNum(rec.profit_percent);
+        newState.adjustments.find(a => a.id === 'profit').enabled = toNum(rec.profit_percent) > 0;
+
+        const lines = lineItems.filter(x => String(x.record_id).trim() === recId).sort((a,b) => (a.line_no||0) - (b.line_no||0));
+        newState.items = lines.map(L => {
+            const subs = subItems.filter(s => String(s.record_id).trim() === recId && Number(s.line_no) === Number(L.line_no))
+                                 .sort((a,b) => (a.subline_no||0) - (b.subline_no||0))
+                                 .map(s => ({ desc: s.description, qty: s.qty, rate: s.rate }));
+            return normalizeItem({ desc: L.description, qty: L.qty, rate: L.rate, usesSub: L.uses_subitems, subs });
+        });
+
+        newState.attachments = attachments.filter(a => String(a.record_id).trim() === recId).map(a => ({
+            filename: a.filename, mime: a.mime_type, base64: a.base64, size: a.size_bytes
+        }));
+        
+        setStateAndRender(newState);
+        showNotification(`Loaded record ${recId}`, 'success');
+    }
+
+    function writeSheet(wb, name, rows) {
+        const ws = XLSX.utils.json_to_sheet(rows);
+        wb.Sheets[name] = ws;
+        if (!wb.SheetNames.includes(name)) {
+            wb.SheetNames.push(name);
+        }
+    }
+
+    // ---------- UI Helpers ----------
+    let notificationTimeout;
+    function showNotification(message, type = 'info') {
+        const notification = $('#notification');
+        const messageEl = $('#notification-message');
+
+        messageEl.textContent = message;
+        notification.classList.remove('bg-slate-800', 'bg-green-600', 'bg-red-600', 'bg-yellow-500');
+
+        if (type === 'success') notification.classList.add('bg-green-600');
+        else if (type === 'error') notification.classList.add('bg-red-600');
+        else if (type === 'warn') notification.classList.add('bg-yellow-500');
+        else notification.classList.add('bg-slate-800');
+
+        notification.classList.remove('translate-x-[150%]');
+        
+        clearTimeout(notificationTimeout);
+        notificationTimeout = setTimeout(() => {
+            notification.classList.add('translate-x-[150%]');
+        }, 4000);
+    }
+    
+    function setupDropdowns() {
+        const statusOptions = ['Draft', 'Sent', 'Approved', 'Rejected', 'Paid'];
+        const dueOptions = { '0': 'Due on receipt', '7': 'Net 7', '15': 'Net 15', '30': 'Net 30' };
+        const docTypeOptions = ['Invoice', 'Estimate'];
+        const stampOptions = ['None', 'Paid', 'Overdue', 'Void', 'Draft', 'Confidential'];
+
+        $('#status').innerHTML = statusOptions.map(o => `<option>${o}</option>`).join('');
+        $('#dueIn').innerHTML = Object.entries(dueOptions).map(([val, text]) => `<option value="${val}">${text}</option>`).join('');
+        $('#docType').innerHTML = docTypeOptions.map(o => `<option>${o}</option>`).join('');
+        $('#stampType').innerHTML = stampOptions.map(o => `<option>${o}</option>`).join('');
+    }
+    
+    function setViewMode(mode) {
+        const container = $('#main-container');
+        const viewButtons = $$('[data-action="setView"]');
+
+        container.classList.remove('max-w-5xl', 'max-w-3xl', 'max-w-md');
+        viewButtons.forEach(btn => btn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white'));
+        
+        const activeButton = $(`[data-view="${mode}"]`);
+        activeButton.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+
+        switch (mode) {
+            case 'tablet': container.classList.add('max-w-3xl'); break;
+            case 'mobile': container.classList.add('max-w-md'); break;
+            default: container.classList.add('max-w-5xl'); break;
+        }
+        localStorage.setItem('viewMode', mode);
+    }
+    
+    function applyInitialViewMode() {
+        setViewMode(localStorage.getItem('viewMode') || 'pc');
+    }
+
+    // ---------- Theme Management ----------
+    function toggleTheme() {
+        const html = document.documentElement;
+        html.classList.toggle('dark');
+        localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        updateThemeIcons();
+    }
+    
+    function updateThemeIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        $('#theme-icon-light').classList.toggle('hidden', isDark);
+        $('#theme-icon-dark').classList.toggle('hidden', !isDark);
+    }
+    
+    function applyInitialTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        updateThemeIcons();
+    }
+
+    // ---------- App Initialization ----------
+    function init() {
+        applyInitialTheme();
+        applyInitialViewMode();
+        setupDropdowns();
+        setupEventListeners();
+        const savedLogo = localStorage.getItem('savedLogo');
+        if (savedLogo) {
+            state.logoDataUrl = savedLogo;
+        }
+        render(); // Initial render
+        showNotification('Welcome to the OAK Invoicing tool!', 'info');
+    }
+
+    init();
+});
+</script>
+</body>
+</html>
+
