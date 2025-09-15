@@ -373,11 +373,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return isNaN(n) ? 0 : n;
     };
     const round2 = (n) => Math.round((toNum(n)) * 100) / 100;
-    const isoAddDays = (iso, d) => { 
+    const isoAddDays = (iso, d) => {
         if (!iso) return '';
         const dt = new Date(iso);
         dt.setUTCDate(dt.getUTCDate() + toNum(d));
         return dt.toISOString().slice(0, 10);
+    };
+
+    // Safe localStorage access to avoid crashes in private mode or blocked storage
+    const storage = {
+        get(key) {
+            try { return localStorage.getItem(key); } catch { return null; }
+        },
+        set(key, value) {
+            try { localStorage.setItem(key, value); } catch {}
+        }
     };
 
     // ---------- State Management ----------
@@ -663,6 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         $('#filePicker').addEventListener('change', handleFileLoad);
         $('#logoPicker').addEventListener('change', handleLogoUpload);
+        $('#attachPicker').addEventListener('change', handleAttachmentChange);
     }
     
     function handleLiveUpdate(e) {
@@ -793,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const dataUrl = await fileToDataUrl(file);
             state.logoDataUrl = dataUrl;
-            localStorage.setItem('savedLogo', dataUrl);
+            storage.set('savedLogo', dataUrl);
             renderHeader();
             showNotification('Logo updated!', 'success');
         } catch (error) {
@@ -802,16 +813,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function handleAttachmentChange(e) {
-        for (const f of e.target.files || []) {
+        const files = Array.from(e.target.files || []);
+        let added = 0;
+        for (const f of files) {
             try {
                 const base64 = await fileToBase64(f);
                 state.attachments.push({ filename: f.name, mime: f.type, base64, size: f.size });
+                added++;
             } catch (error) {
                 showNotification(`Error reading ${f.name}.`, 'error');
             }
         }
         e.target.value = ''; // Reset picker
         renderAttachments();
+        if (added) {
+            showNotification(`Added ${added} attachment${added > 1 ? 's' : ''}.`, 'success');
+        }
     }
     
     function fileToBase64(file) {
@@ -1073,18 +1090,18 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'mobile': container.classList.add('max-w-md'); break;
             default: container.classList.add('max-w-5xl'); break;
         }
-        localStorage.setItem('viewMode', mode);
+        storage.set('viewMode', mode);
     }
-    
+
     function applyInitialViewMode() {
-        setViewMode(localStorage.getItem('viewMode') || 'pc');
+        setViewMode(storage.get('viewMode') || 'pc');
     }
 
     // ---------- Theme Management ----------
     function toggleTheme() {
         const html = document.documentElement;
         html.classList.toggle('dark');
-        localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        storage.set('theme', html.classList.contains('dark') ? 'dark' : 'light');
         updateThemeIcons();
     }
     
@@ -1095,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function applyInitialTheme() {
-        const savedTheme = localStorage.getItem('theme');
+        const savedTheme = storage.get('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
             document.documentElement.classList.add('dark');
@@ -1111,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyInitialViewMode();
         setupDropdowns();
         setupEventListeners();
-        const savedLogo = localStorage.getItem('savedLogo');
+        const savedLogo = storage.get('savedLogo');
         if (savedLogo) {
             state.logoDataUrl = savedLogo;
         }
