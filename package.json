@@ -1,0 +1,12 @@
+{
+  "name": "invoicing",
+  "version": "1.0.0",
+  "description": "Standalone invoicing tool",
+  "scripts": {
+    "start": "http-server -c-1 -p 8080 .",
+    "test": "echo \"No tests\""
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
