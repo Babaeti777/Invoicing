@@ -38,309 +38,966 @@
   </script>
   
   <style>
-    /* Custom styles for a polished look */
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+    :root {
+      color-scheme: light dark;
     }
-    #print-stamp { display: none; }
-    /* Print-specific styles */
-    @media print {
-      body { 
-        background-color: white !important; 
-        font-size: 10pt;
+
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #f1f5f9;
+    }
+
+    html.dark body {
+      background-color: #0f172a;
+    }
+
+    #main-container {
+      max-width: 70rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      transition: max-width 0.3s ease;
+    }
+
+    #app-card {
+      background-color: rgba(255, 255, 255, 0.96);
+      border-radius: 1.5rem;
+      box-shadow: 0 30px 60px -40px rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    html.dark #app-card {
+      background-color: rgba(15, 23, 42, 0.92);
+      border-color: rgba(71, 85, 105, 0.45);
+      box-shadow: 0 40px 80px -48px rgba(15, 23, 42, 0.9);
+    }
+
+    .sheet-inner {
+      padding: 2rem 2.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 768px) {
+      #main-container {
+        padding: 1.25rem 1rem 3rem;
       }
-      .no-print { display: none !important; }
-      .print-only-flex { display: flex !important; }
-      .print-only-block { display: block !important; }
-      .print-shadow-none { box-shadow: none !important; }
-      .print-border-none { border: none !important; }
-      .print-p-0 { padding: 0 !important; }
-      .print-w-full { width: 100% !important; }
-      .print-max-w-none { max-width: none !important; }
-      .print-m-0 { margin: 0 !important; }
-      input, textarea, select { 
-        border-color: transparent !important; 
-        background-color: white !important; 
-        -webkit-appearance: none; 
-        -moz-appearance: none; 
-        appearance: none; 
-        padding: 0; 
+
+      .sheet-inner {
+        padding: 1.75rem 1.25rem 2.5rem;
+        gap: 2rem;
+      }
+    }
+
+    #print-stamp {
+      display: none;
+    }
+
+    .sheet-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      .sheet-header {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .sheet-header__brand {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .sheet-header__brand img {
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+      border-radius: 0.75rem;
+      background-color: rgba(226, 232, 240, 0.65);
+    }
+
+    html.dark .sheet-header__brand img {
+      background-color: rgba(30, 41, 59, 0.8);
+    }
+
+    .sheet-header__actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .sheet-header__actions {
+        align-items: flex-start;
+      }
+    }
+
+    .doc-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sheet-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-toolbar__group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .sheet-toolbar__group--spaced {
+      gap: 0.75rem;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+      background-color: rgba(241, 245, 249, 0.9);
+    }
+
+    html.dark .view-toggle {
+      background-color: rgba(30, 41, 59, 0.9);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+      }
+    }
+
+    .info-grid__form {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 1rem 1.25rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    textarea,
+    input,
+    select {
+      border-radius: 0.75rem;
+    }
+
+    .mobile-summary {
+      display: none;
+      gap: 1rem;
+      padding: 1.25rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 1rem;
+      background-color: rgba(248, 250, 252, 0.95);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
+
+    html.dark .mobile-summary {
+      background-color: rgba(30, 41, 59, 0.85);
+      border-color: rgba(71, 85, 105, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.6);
+    }
+
+    .mobile-summary__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .mobile-summary__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .mobile-summary__label {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    html.dark .mobile-summary__label {
+      color: #cbd5f5;
+    }
+
+    .mobile-summary__value {
+      display: block;
+      margin-top: 0.25rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    html.dark .mobile-summary__value {
+      color: #f8fafc;
+    }
+
+    .mobile-summary__value--balance {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .mobile-summary {
+        display: grid;
+      }
+    }
+
+    body.is-mobile-preview .mobile-summary {
+      display: grid;
+    }
+
+    #itemsWrapper {
+      border-radius: 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      overflow: hidden;
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    html.dark #itemsWrapper {
+      background-color: rgba(15, 23, 42, 0.9);
+      border-color: rgba(71, 85, 105, 0.45);
+    }
+
+    #items {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #items thead {
+      background-color: rgba(241, 245, 249, 0.9);
+    }
+
+    html.dark #items thead {
+      background-color: rgba(30, 41, 59, 0.9);
+    }
+
+    #items th,
+    #items td {
+      padding: 0.85rem 1rem;
+    }
+
+    #items th {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #475569;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    html.dark #items th {
+      color: #cbd5f5;
+      border-bottom-color: rgba(71, 85, 105, 0.45);
+    }
+
+    #items td {
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      vertical-align: top;
+    }
+
+    html.dark #items td {
+      border-top-color: rgba(71, 85, 105, 0.35);
+    }
+
+    #items tbody tr:last-of-type td {
+      border-bottom: none;
+    }
+
+    .subitem-stack {
+      margin-top: 0.75rem;
+      padding-left: 1rem;
+      border-left: 2px solid rgba(148, 163, 184, 0.3);
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    html.dark .subitem-stack {
+      border-color: rgba(71, 85, 105, 0.55);
+    }
+
+    .subitem-card {
+      border-radius: 0.75rem;
+      border: 1px solid rgba(203, 213, 225, 0.9);
+      background-color: rgba(248, 250, 252, 0.95);
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    html.dark .subitem-card {
+      border-color: rgba(71, 85, 105, 0.5);
+      background-color: rgba(30, 41, 59, 0.85);
+    }
+
+    .subitem-card__grid {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .subitem-card__label {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    html.dark .subitem-card__label {
+      color: #cbd5f5;
+    }
+
+    .subitem-card__value {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    html.dark .subitem-card__value {
+      color: #f8fafc;
+    }
+
+    .totals-card {
+      border-radius: 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(248, 250, 252, 0.9);
+      padding: 1.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    html.dark .totals-card {
+      border-color: rgba(71, 85, 105, 0.45);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .totals-card__group {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .totals-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .totals-line--balance {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #b45309;
+    }
+
+    html.dark .totals-line--balance {
+      color: #facc15;
+    }
+
+    @media (max-width: 1024px) {
+      .totals-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .compact-note {
+      min-height: 110px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5f5;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    html.dark ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb {
+      background: #475569;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Mobile table layout */
+    @media (max-width: 640px) {
+      #itemsWrapper {
+        border: none;
+        background: transparent;
+      }
+
+      #items {
+        display: block;
+        border-collapse: separate;
+      }
+
+      #items thead {
+        display: none;
+      }
+
+      #items tbody {
+        display: grid;
+        gap: 1rem;
+      }
+
+      #items tbody tr {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.6);
+      }
+
+      html.dark #items tbody tr {
+        border-color: rgba(71, 85, 105, 0.45);
+        background: rgba(15, 23, 42, 0.88);
+        box-shadow: 0 24px 48px -28px rgba(15, 23, 42, 0.9);
+      }
+
+      #items tbody tr td {
+        padding: 0;
+        border: none;
+      }
+
+      #items tbody tr td.item-cell--desc {
+        grid-column: 1 / -1;
+      }
+
+      #items tbody tr td.item-cell--actions {
+        justify-self: flex-end;
+      }
+
+      #items tbody tr td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.3rem;
+        color: #64748b;
+        font-weight: 600;
+      }
+
+      html.dark #items tbody tr td[data-label]::before {
+        color: #cbd5f5;
+      }
+
+      #items tbody tr td.item-cell--amount .item-cell__value {
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      html.dark #items tbody tr td.item-cell--amount .item-cell__value {
+        color: #f8fafc;
+      }
+
+      .subitem-stack {
+        padding-left: 0;
+        border-left: none;
+      }
+
+      .subitem-card {
+        background: rgba(248, 250, 252, 0.95);
+      }
+
+      html.dark .subitem-card {
+        background: rgba(30, 41, 59, 0.88);
+      }
+    }
+
+    body.is-mobile-preview #itemsWrapper {
+      border: none;
+      background: transparent;
+    }
+
+    body.is-mobile-preview #items {
+      display: block;
+      border-collapse: separate;
+    }
+
+    body.is-mobile-preview #items thead {
+      display: none;
+    }
+
+    body.is-mobile-preview #items tbody {
+      display: grid;
+      gap: 1rem;
+    }
+
+    body.is-mobile-preview #items tbody tr {
+      display: grid;
+      gap: 0.75rem;
+      padding: 1rem;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.6);
+    }
+
+    html.dark body.is-mobile-preview #items tbody tr {
+      border-color: rgba(71, 85, 105, 0.45);
+      background: rgba(15, 23, 42, 0.88);
+      box-shadow: 0 24px 48px -28px rgba(15, 23, 42, 0.9);
+    }
+
+    body.is-mobile-preview #items tbody tr td {
+      padding: 0;
+      border: none;
+    }
+
+    body.is-mobile-preview #items tbody tr td.item-cell--desc {
+      grid-column: 1 / -1;
+    }
+
+    body.is-mobile-preview #items tbody tr td.item-cell--actions {
+      justify-self: flex-end;
+    }
+
+    body.is-mobile-preview #items tbody tr td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    html.dark body.is-mobile-preview #items tbody tr td[data-label]::before {
+      color: #cbd5f5;
+    }
+
+    body.is-mobile-preview .subitem-stack {
+      padding-left: 0;
+      border-left: none;
+    }
+
+    @media print {
+      @page {
+        size: auto;
+        margin: 0.6in;
+      }
+
+      body {
+        background: white !important;
         color: black !important;
         font-size: 10pt;
       }
-      textarea { resize: none !important; }
-      #app-card {
-        border-radius: 0;
-        position: relative;
-        box-shadow: none;
+
+      #main-container {
+        padding: 0 !important;
+        max-width: none;
       }
-      #print-stamp { 
+
+      #app-card {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+
+      .sheet-inner {
+        padding: 0 !important;
+        gap: 1.5rem;
+      }
+
+      .sheet-header {
+        gap: 1rem;
+      }
+
+      .sheet-toolbar,
+      .mobile-summary,
+      .no-print {
+        display: none !important;
+      }
+
+      .print-only-flex {
+        display: flex !important;
+      }
+
+      .print-only-block {
+        display: block !important;
+      }
+
+      .print-shadow-none {
+        box-shadow: none !important;
+      }
+
+      .print-border-none {
+        border: none !important;
+      }
+
+      .print-bg-transparent {
+        background: transparent !important;
+      }
+
+      textarea,
+      input,
+      select {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      #itemsWrapper {
+        border: none;
+        background: transparent;
+        overflow: visible;
+      }
+
+      #items {
+        display: table;
+      }
+
+      #items thead {
+        display: table-header-group;
+      }
+
+      #items tbody {
+        display: table-row-group;
+      }
+
+      #items tbody tr td {
+        border: 1px solid #d1d5db;
+      }
+
+      #print-stamp {
         display: block;
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) rotate(-15deg);
-        border: 8px solid;
-        padding: 1.5rem 3rem;
-        border-radius: 0.5rem;
-        font-size: 6rem;
+        transform: translate(-50%, -50%) rotate(-18deg);
+        border: 6px solid;
+        padding: 1rem 2.5rem;
+        border-radius: 0.45rem;
+        font-size: 4.5rem;
         font-weight: 800;
-        letter-spacing: 0.2em;
+        letter-spacing: 0.18em;
         opacity: 0.15;
         user-select: none;
-        z-index: 10;
-      }
-      .print-bg-transparent { background-color: transparent !important; }
-      tr, .totals-section > div {
-        page-break-inside: avoid;
+        z-index: 5;
       }
     }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .dark ::-webkit-scrollbar-track { background: #1e293b; }
-    .dark ::-webkit-scrollbar-thumb { background: #475569; }
-    .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans transition-colors duration-300">
 
   <!-- Main container -->
-  <div id="main-container" class="mx-auto p-4 md:p-8 print-max-w-none print-m-0 transition-all duration-300">
-    <div id="app-card" data-print-status="" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg print-shadow-none transition-colors duration-300 relative overflow-hidden">
+  <div id="main-container" class="transition-all duration-300">
+    <div id="app-card" data-print-status="" class="transition-colors duration-300 relative overflow-hidden">
       
       <!-- STATUS Stamp for Print -->
       <div id="print-stamp">STAMP</div>
       
-      <div class="p-6 md:p-8 print-p-0">
+      <div class="sheet-inner">
         
-        <!-- START: Print-Only Header -->
-        <div class="hidden print-only-flex mb-12 justify-between items-start">
+        <!-- Print header for PDF/printouts -->
+        <div class="hidden print-only-flex items-start justify-between gap-6 text-xs text-gray-600">
+          <div class="flex items-start gap-3">
+            <img id="print-logo" src="" alt="Company Logo" class="w-28 h-auto max-h-24 object-contain">
             <div>
-                <img id="print-logo" src="" alt="Company Logo" class="w-32 h-auto max-h-24 object-contain">
+              <p class="font-semibold text-lg text-gray-800">OAK Builders LLC</p>
+              <p>123 Construction Way</p>
+              <p>Fairfax, VA 22030, USA</p>
+              <p>info@oakllc.co</p>
+              <p>(202) 888-9895</p>
+              <p>www.oakllc.co</p>
             </div>
-            <div class="text-right text-xs text-gray-600">
-                <p class="font-bold text-base text-gray-800">OAK Builders LLC</p>
-                <p>123 Construction Way</p>
-                <p>Fairfax, VA 22030, USA</p>
-                <p>info@oakllc.co</p>
-                <p>(202) 888-9895</p>
-                <p>www.oakllc.co</p>
-            </div>
+          </div>
+          <div class="text-right space-y-2">
+            <h1 id="printDocTitle" class="text-3xl font-bold tracking-tight text-gray-800">Invoice</h1>
+            <table class="w-full text-xs text-gray-600">
+              <tbody>
+                <tr class="border-b border-gray-200">
+                  <td class="py-1 pr-4">Invoice #</td>
+                  <td id="printInvNo" class="py-1 font-semibold text-gray-800 text-right"></td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                  <td class="py-1 pr-4">Date</td>
+                  <td id="printInvDate" class="py-1 font-semibold text-gray-800 text-right"></td>
+                </tr>
+                <tr id="printDueWrap" class="border-b border-gray-200">
+                  <td class="py-1 pr-4">Due Date</td>
+                  <td id="printDueDate" class="py-1 font-semibold text-gray-800 text-right"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <!-- END: Print-Only Header -->
 
-        <!-- Header Section -->
-        <header class="pb-6 border-b border-slate-200 dark:border-slate-700 print-border-none">
-          <div class="flex flex-wrap items-center justify-between gap-6">
-            <!-- Brand Info -->
-            <div class="flex items-center gap-4 no-print">
-              <img id="ui-logo" src="https://placehold.co/80x80/b8860b/FFFFFF?text=OAK" alt="Company Logo" class="w-20 h-20 h-auto object-contain bg-slate-100 dark:bg-slate-700 rounded-lg">
-              <div>
-                <h2 class="text-lg font-bold text-slate-900 dark:text-white">OAK Builders LLC</h2>
+        <header class="sheet-header no-print">
+          <div class="sheet-header__brand">
+            <img id="ui-logo" src="https://placehold.co/96x96/b8860b/FFFFFF?text=OAK" alt="Company Logo">
+            <div class="space-y-3">
+              <div class="space-y-1">
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white">OAK Builders LLC</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">123 Construction Way · Fairfax, VA 22030</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <span>info@oakllc.co</span>
+                <span>•</span>
+                <span>(202) 888-9895</span>
+                <span>•</span>
+                <span>www.oakllc.co</span>
+              </div>
+              <div class="flex items-center gap-3">
                 <input type="file" id="logoPicker" class="hidden" accept="image/*">
                 <button data-action="uploadLogo" class="text-xs font-semibold text-accent dark:text-accent-light hover:underline">Upload Logo</button>
               </div>
             </div>
-            <!-- Document Type -->
-            <div class="flex items-center gap-3">
-              <h1 id="docTitle" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white print:text-4xl print:text-gray-800">Invoice</h1>
-              <select id="docType" class="no-print bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
-            </div>
           </div>
-          
-          <!-- Toolbar -->
-          <div class="no-print mt-6 flex flex-wrap items-center justify-between gap-4">
-              <div class="flex items-center gap-2">
-                <input id="filePicker" type="file" accept=".xlsx" class="hidden" />
-                <button data-action="loadExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Load from Excel</button>
-                <button data-action="saveExcel" class="px-4 py-2 text-sm font-semibold text-slate-900 bg-accent hover:bg-accent-light rounded-lg transition-colors">Save to Excel</button>
-              </div>
-              <div class="flex items-center gap-2">
-                 <div class="flex items-center gap-2">
-                    <label for="stampType" class="text-xs font-semibold text-slate-500">PDF Stamp</label>
-                    <select id="stampType" class="bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
-                 </div>
-                 <button onclick="window.print()" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Print / PDF</button>
-                 
-                 <!-- View Mode Switcher -->
-                 <div class="ml-2 flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-700 rounded-lg">
-                    <button data-action="setView" data-view="pc" class="p-2 rounded-md transition-colors" title="PC View">
-                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 0H2.5A1.5 1.5 0 0 0 1 1.5v8A1.5 1.5 0 0 0 2.5 11h3.5v2H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-1v-2h3.5A1.5 1.5 0 0 0 15 9.5v-8A1.5 1.5 0 0 0 13.5 0zM2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-8z"/></svg>
-                    </button>
-                    <button data-action="setView" data-view="tablet" class="p-2 rounded-md transition-colors" title="Tablet View">
-                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM4 1a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V1z"/><path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
-                    </button>
-                    <button data-action="setView" data-view="mobile" class="p-2 rounded-md transition-colors" title="Mobile View">
-                       <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/><path d="M7 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
-                    </button>
-                </div>
-
-                 <button id="theme-toggle" data-action="toggleTheme" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                    <svg id="theme-icon-light" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                 </button>
-              </div>
+          <div class="sheet-header__actions">
+            <div class="doc-title">
+              <h1 id="docTitle" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Invoice</h1>
+              <select id="docType" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Efficient workspace for estimates and invoices</p>
           </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="mt-8">
-          <div class="flex flex-col md:flex-row justify-between gap-8">
-              
-              <!-- Bill To Section -->
-              <section class="w-full md:w-1/2">
-                <label for="billTo" class="text-xs font-semibold text-slate-500 dark:text-slate-400 print:text-gray-500">Bill to</label>
-                <textarea id="billTo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent min-h-[110px]" placeholder="Client name&#10;Company&#10;Email · Phone&#10;Address"></textarea>
-              </section>
+        <div class="sheet-toolbar no-print">
+          <div class="sheet-toolbar__group">
+            <input id="filePicker" type="file" accept=".xlsx" class="hidden">
+            <button data-action="loadExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Load from Excel</button>
+            <button data-action="saveExcel" class="px-4 py-2 text-sm font-semibold text-slate-900 bg-accent hover:bg-accent-light rounded-lg transition-colors">Save to Excel</button>
+          </div>
+          <div class="sheet-toolbar__group sheet-toolbar__group--spaced">
+            <div class="flex items-center gap-2">
+              <label for="stampType" class="text-xs font-semibold text-slate-500">PDF Stamp</label>
+              <select id="stampType" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-accent focus:border-accent"></select>
+            </div>
+            <button onclick="window.print()" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Print / PDF</button>
+            <div class="view-toggle">
+              <button data-action="setView" data-view="pc" class="p-2 rounded-md transition-colors" title="PC View">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 0H2.5A1.5 1.5 0 0 0 1 1.5v8A1.5 1.5 0 0 0 2.5 11h3.5v2H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-1v-2h3.5A1.5 1.5 0 0 0 15 9.5v-8A1.5 1.5 0 0 0 13.5 0zM2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-8z"/></svg>
+              </button>
+              <button data-action="setView" data-view="tablet" class="p-2 rounded-md transition-colors" title="Tablet View">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM4 1a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V1z"/><path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+              </button>
+              <button data-action="setView" data-view="mobile" class="p-2 rounded-md transition-colors" title="Mobile View">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/><path d="M7 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+              </button>
+            </div>
+            <button id="theme-toggle" data-action="toggleTheme" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <svg id="theme-icon-light" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            </button>
+          </div>
+        </div>
 
-              <!-- Details Section -->
-              <section class="w-full md:w-1/2">
-                <!-- Print Details Table -->
-                <table class="w-full hidden print-only-block mb-8">
-                    <tbody>
-                        <tr class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Invoice #</td><td id="printInvNo" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
-                        <tr class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Date</td><td id="printInvDate" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
-                        <tr id="printDueWrap" class="border-b border-gray-200"><td class="py-1 pr-4 text-gray-500">Due Date</td><td id="printDueDate" class="py-1 font-semibold text-gray-800 text-right"></td></tr>
-                    </tbody>
-                </table>
-                  
-                <!-- Interactive Form -->
-                <div class="grid grid-cols-2 gap-6 no-print">
-                    <div>
-                      <label for="invNo" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Invoice / Estimate #</label>
-                      <input id="invNo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" placeholder="e.g., 0001" />
-                    </div>
-                     <div>
-                      <label for="status" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</label>
-                      <select id="status" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
-                    </div>
-                    <div>
-                      <label for="invDate" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Date</label>
-                      <input id="invDate" type="date" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" />
-                    </div>
-                    <div id="dueWrap">
-                      <label for="dueIn" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Due Date</label>
-                      <select id="dueIn" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
-                    </div>
-                    <div id="paidWrap" class="col-span-2">
-                      <div class="flex items-center justify-between">
-                        <label for="paid" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Amount Paid</label>
-                        <button data-action="togglePayments" class="no-print text-xs font-semibold text-accent dark:text-accent-light">Track Payments</button>
-                      </div>
-                      <input id="paid" type="text" value="$0.00" class="mt-1 block w-full bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" readonly />
-                      <div id="paymentTracker" class="hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"></div>
-                    </div>
+        <main class="space-y-10">
+          <section class="info-grid">
+            <div class="space-y-4">
+              <div>
+                <label for="billTo" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Bill to</label>
+                <textarea id="billTo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent compact-note" placeholder="Client name&#10;Company&#10;Email · Phone&#10;Address"></textarea>
+              </div>
+            </div>
+            <div class="info-grid__form">
+              <div class="form-grid">
+                <div>
+                  <label for="invNo" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Invoice / Estimate #</label>
+                  <input id="invNo" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" placeholder="e.g., 0001" />
                 </div>
-                 <div class="no-print">
-                     <label for="recId" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Record ID</label>
-                     <input id="recId" class="mt-1 block w-full bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" placeholder="Auto-generated" readonly />
-                 </div>
-              </section>
+                <div>
+                  <label for="status" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</label>
+                  <select id="status" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
+                </div>
+                <div>
+                  <label for="invDate" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Date</label>
+                  <input id="invDate" type="date" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" />
+                </div>
+                <div id="dueWrap">
+                  <label for="dueIn" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Due Date</label>
+                  <select id="dueIn" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent"></select>
+                </div>
+                <div class="col-span-2">
+                  <label for="recId" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Record ID</label>
+                  <input id="recId" class="mt-1 block w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" placeholder="Auto-generated" readonly />
+                </div>
+                <div id="paidWrap" class="col-span-2 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label for="paid" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Amount Paid</label>
+                    <button data-action="togglePayments" class="text-xs font-semibold text-accent dark:text-accent-light">Track Payments</button>
+                  </div>
+                  <input id="paid" type="text" value="$0.00" class="block w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" readonly />
+                  <div id="paymentTracker" class="hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="mobile-summary no-print" aria-label="Invoice totals snapshot">
+            <div class="mobile-summary__row">
+              <div>
+                <span class="mobile-summary__label">Balance Due</span>
+                <span id="mobile-balance" class="mobile-summary__value mobile-summary__value--balance">$0.00</span>
+              </div>
+              <div class="flex gap-2">
+                <button data-action="saveExcel" class="px-3 py-2 text-sm font-semibold text-slate-900 bg-accent hover:bg-accent-light rounded-full transition-colors">Save</button>
+                <button type="button" onclick="window.print()" class="px-3 py-2 text-sm font-semibold bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 rounded-full transition-colors">PDF</button>
+              </div>
+            </div>
+            <div class="mobile-summary__grid">
+              <div>
+                <span class="mobile-summary__label">Subtotal</span>
+                <span id="mobile-subtotal" class="mobile-summary__value">$0.00</span>
+              </div>
+              <div>
+                <span class="mobile-summary__label">Tax</span>
+                <span id="mobile-tax" class="mobile-summary__value">$0.00</span>
+              </div>
+              <div>
+                <span class="mobile-summary__label">Paid</span>
+                <span id="mobile-paid" class="mobile-summary__value">$0.00</span>
+              </div>
+              <div>
+                <span class="mobile-summary__label">Total</span>
+                <span id="mobile-total" class="mobile-summary__value">$0.00</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Items Table -->
-          <section class="mt-10">
-            <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 print-border-none">
+          <section class="space-y-4">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <h2 class="text-xs font-semibold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">Line Items</h2>
+              <div class="no-print flex flex-wrap gap-2">
+                <button data-action="addRow" class="px-3 py-2 text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors">+ Add Item</button>
+                <button data-action="clearAll" class="px-3 py-2 text-sm font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 rounded-md transition-colors">Clear All</button>
+              </div>
+            </div>
+            <div id="itemsWrapper" class="overflow-x-auto">
               <table class="w-full" id="items">
-                <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase text-slate-500 dark:text-slate-400 print:bg-gray-200 print:text-gray-600">
+                <thead>
                   <tr>
-                    <th class="px-4 py-3 text-left font-semibold">Item</th>
-                    <th class="px-4 py-3 text-right font-semibold w-24">Qty</th>
-                    <th class="px-4 py-3 text-right font-semibold w-32">Rate</th>
-                    <th class="px-4 py-3 text-right font-semibold w-32">Amount</th>
-                    <th class="px-4 py-3 text-center font-semibold w-12 no-print"></th>
+                    <th class="text-left">Item</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Rate</th>
+                    <th class="text-right">Amount</th>
+                    <th class="text-center no-print"></th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
-            <div class="no-print mt-4 flex items-center gap-2">
-              <button data-action="addRow" class="px-3 py-1.5 text-sm font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md transition-colors">+ Add Item</button>
-              <button data-action="clearAll" class="px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/80 rounded-md transition-colors">Clear All</button>
-            </div>
           </section>
 
-          <!-- Notes, Attachments, and Totals -->
-          <section class="mt-10 grid lg:grid-cols-2 gap-12">
-            <div>
+          <section class="grid gap-10 lg:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
+            <div class="space-y-6">
               <div>
-                <label for="notes" class="text-xs font-semibold text-slate-500 dark:text-slate-400 print:text-gray-500">Notes</label>
-                <textarea id="notes" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent" placeholder="Thanks for your business."></textarea>
+                <label for="notes" class="text-xs font-semibold text-slate-500 dark:text-slate-400">Notes</label>
+                <textarea id="notes" class="mt-1 block w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm focus:ring-accent focus:border-accent compact-note" placeholder="Thanks for your business."></textarea>
               </div>
-              <div class="mt-6 no-print">
-                <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300">Attachments (backed up in Excel)</h3>
-                <div class="mt-2">
-                  <input id="attachPicker" type="file" multiple class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent-dark dark:file:bg-accent/20 dark:file:text-accent-light hover:file:bg-accent/20"/>
-                  <div id="attachments" class="mt-3 space-y-2"></div>
-                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Large files will increase workbook size. PDFs are recommended.</p>
-                </div>
+              <div class="no-print space-y-3">
+                <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300">Attachments (stored in Excel)</h3>
+                <input id="attachPicker" type="file" multiple class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent-dark dark:file:bg-accent/20 dark:file:text-accent-light hover:file:bg-accent/20"/>
+                <div id="attachments" class="space-y-2"></div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Large files will increase workbook size. PDFs are recommended.</p>
               </div>
             </div>
-            <!-- Totals Section -->
-            <div class="space-y-4 totals-section">
-               <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Subtotal</span>
-                        <span id="subtotal" class="font-semibold text-slate-700 dark:text-slate-200 print:text-gray-800">$0.00</span>
-                    </div>
-
-                    <!-- Dynamic Adjustments: Bond, OH, Profit -->
-                    <div id="adjustments"></div>
-
-                    <div class="flex justify-between items-center">
-                      <div class="flex items-center gap-2">
-                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Tax</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <input id="taxRate" type="number" min="0" step="0.01" value="0" class="w-20 text-right bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print">
-                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600" id="printTaxRate">0%</span>
-                      </div>
-                    </div>
-                     <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-500 dark:text-slate-400 pl-4 print:text-gray-600">Tax amount</span>
-                        <span id="tax" class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-800">$0.00</span>
-                    </div>
+            <aside class="totals-card">
+              <div class="totals-card__group">
+                <div class="totals-line">
+                  <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+                  <span id="subtotal" class="font-semibold text-slate-700 dark:text-slate-100">$0.00</span>
                 </div>
-
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
-                    <div class="flex justify-between items-center text-lg font-bold">
-                        <span class="text-slate-800 dark:text-white print:text-gray-800">Total</span>
-                        <span id="total" class="text-slate-800 dark:text-white print:text-gray-800">$0.00</span>
-                    </div>
-                     <div class="flex justify-between items-center font-semibold">
-                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">Amount Paid</span>
-                        <span id="paidTotal" class="text-slate-700 dark:text-slate-200 print:text-gray-800">$0.00</span>
-                    </div>
-                    <div id="balanceRow" class="flex justify-between items-center font-semibold text-accent-dark dark:text-accent-light print:bg-yellow-100 print:p-2 print:rounded-md">
-                        <span class="print:text-yellow-800">Balance Due</span>
-                        <span id="due" class="print:text-yellow-800">$0.00</span>
-                    </div>
+                <div id="adjustments"></div>
+                <div class="totals-line">
+                  <span class="text-slate-500 dark:text-slate-400">Tax</span>
+                  <div class="flex items-center gap-2">
+                    <input id="taxRate" type="number" min="0" step="0.01" value="0" class="w-20 text-right bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print">
+                    <span id="printTaxRate" class="text-xs text-slate-500 dark:text-slate-400">0%</span>
+                  </div>
                 </div>
-            </div>
+                <div class="totals-line text-sm text-slate-500 dark:text-slate-400">
+                  <span>Tax amount</span>
+                  <span id="tax" class="font-medium text-slate-700 dark:text-slate-100">$0.00</span>
+                </div>
+              </div>
+              <div class="totals-card__group border-t border-slate-200 dark:border-slate-700 pt-4">
+                <div class="totals-line text-lg font-bold text-slate-800 dark:text-white">
+                  <span>Total</span>
+                  <span id="total">$0.00</span>
+                </div>
+                <div class="totals-line font-semibold text-slate-600 dark:text-slate-200">
+                  <span>Amount Paid</span>
+                  <span id="paidTotal">$0.00</span>
+                </div>
+                <div id="balanceRow" class="totals-line totals-line--balance">
+                  <span>Balance Due</span>
+                  <span id="due">$0.00</span>
+                </div>
+              </div>
+            </aside>
           </section>
-
         </main>
-        
-        <!-- START: Print-Only Footer -->
-        <div class="hidden print-only-block mt-24 pt-8 border-t border-gray-300 text-xs text-gray-600">
-            <div class="grid grid-cols-3 gap-8">
-                <div class="col-span-2">
-                    <h4 class="font-semibold text-gray-700 mb-1">Payment Terms</h4>
-                    <p id="paymentTerms">Payment is due upon receipt. Late payments are subject to a service charge of 1.5% per month on all outstanding balances.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-gray-700 mb-1">Payment Methods</h4>
-                    <p>Zelle: payments@oakllc.co</p>
-                    <p>Venmo: @oak-builders</p>
-                </div>
+
+        <div class="hidden print-only-block border-t border-gray-300 pt-6 text-xs text-gray-600">
+          <div class="grid grid-cols-3 gap-8">
+            <div class="col-span-2">
+              <h4 class="font-semibold text-gray-700 mb-1">Payment Terms</h4>
+              <p id="paymentTerms">Payment is due upon receipt. Late payments are subject to a service charge of 1.5% per month on all outstanding balances.</p>
             </div>
-            <p class="text-center mt-12">Thank you for your business!</p>
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-1">Payment Methods</h4>
+              <p>Zelle: payments@oakllc.co</p>
+              <p>Venmo: @oak-builders</p>
+            </div>
+          </div>
+          <p class="mt-6 text-center">Thank you for your business!</p>
         </div>
-        <!-- END: Print-Only Footer -->
       </div>
       <footer class="no-print p-4 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700/50">
           Invoice/Estimate template with Excel repository • Enhanced by Gemini
@@ -380,6 +1037,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return dt.toISOString().slice(0, 10);
     };
 
+    const createEmptyItem = () => ({ desc: '', qty: 1, rate: 0, usesSub: false, subs: [] });
+    const createEmptySubItem = () => ({ desc: '', qty: 1, rate: 0 });
+    const createEmptyPayment = () => ({ date: todayISO(), amount: 0, method: 'New Payment' });
+
     // Safe localStorage access to avoid crashes in private mode or blocked storage
     const storage = {
         get(key) {
@@ -406,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showPaymentTracker: false,
             billTo: '',
             notes: 'Thanks for your business.',
-            items: [{ desc: '', qty: 1, rate: 0, usesSub: false, subs: [] }],
+            items: [createEmptyItem()],
             adjustments: [
                 { id: 'bond', label: 'Bond', enabled: false, pct: 10 },
                 { id: 'oh', label: 'Overhead', enabled: false, pct: 15 },
@@ -426,23 +1087,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function normalizeItem(it) {
-        if (!it || typeof it !== 'object') return { desc: '', qty: 1, rate: 0, usesSub: false, subs: [] };
-        return {
-            desc: String(it.desc ?? ''),
-            qty: toNum(it.qty),
-            rate: toNum(it.rate),
-            usesSub: truthy(it.usesSub),
-            subs: Array.isArray(it.subs) ? it.subs.map(s => ({
-                desc: String(s?.desc ?? ''),
-                qty: toNum(s?.qty),
-                rate: toNum(s?.rate)
-            })) : []
-        };
+        const base = createEmptyItem();
+        if (!it || typeof it !== 'object') return base;
+        base.desc = String(it.desc ?? '');
+        base.qty = toNum(it.qty);
+        base.rate = toNum(it.rate);
+        base.usesSub = truthy(it.usesSub);
+        base.subs = Array.isArray(it.subs) ? it.subs.map(s => ({
+            ...createEmptySubItem(),
+            desc: String(s?.desc ?? ''),
+            qty: toNum(s?.qty),
+            rate: toNum(s?.rate)
+        })) : [];
+        return base;
     }
 
     function normalizeState() {
         if (!Array.isArray(state.items) || state.items.length === 0) {
-            state.items = [{ desc: '', qty: 1, rate: 0, usesSub: false, subs: [] }];
+            state.items = [createEmptyItem()];
         }
         state.items = state.items.map(it => normalizeItem(it));
         if (!Array.isArray(state.payments)) {
@@ -468,6 +1130,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderHeader() {
         $('#docType').value = state.type;
         $('#docTitle').textContent = state.type;
+        const printTitle = $('#printDocTitle');
+        if (printTitle) printTitle.textContent = state.type;
         $('#recId').value = state.id;
         $('#invNo').value = state.number;
         $('#status').value = state.status;
@@ -483,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#paidWrap').classList.toggle('hidden', !isInv);
         $('#balanceRow').classList.toggle('hidden', !isInv);
         
-        $('#ui-logo').src = state.logoDataUrl || 'https://placehold.co/80x80/b8860b/FFFFFF?text=OAK';
+        $('#ui-logo').src = state.logoDataUrl || 'https://placehold.co/96x96/b8860b/FFFFFF?text=OAK';
         $('#print-logo').src = state.logoDataUrl || 'https://placehold.co/128x128/b8860b/FFFFFF?text=OAK';
     }
     
@@ -499,38 +1163,61 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = $('#items tbody');
         tbody.innerHTML = state.items.map((it, idx) => `
             <tr class="border-b border-slate-200 dark:border-slate-700 last:border-b-0 print:border-gray-300">
-                <td class="px-4 py-3 align-top">
-                    <input class="w-full bg-transparent focus:outline-none" placeholder="Item description" value="${it.desc}" data-idx="${idx}" data-field="desc">
-                    ${it.usesSub ? renderSubItems(it, idx) : ''}
-                    <div class="no-print mt-2">
-                        <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
-                            <input type="checkbox" ${it.usesSub ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50" data-idx="${idx}" data-action="toggleSub">
-                            Use sub-items
-                        </label>
+                <td class="item-cell item-cell--desc px-4 py-3 align-top">
+                    <div class="space-y-3">
+                        <input class="w-full bg-transparent focus:outline-none text-sm md:text-base" placeholder="Item description" value="${it.desc}" data-idx="${idx}" data-field="desc">
+                        ${it.usesSub ? renderSubItems(it, idx) : ''}
+                        <div class="no-print">
+                            <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                                <input type="checkbox" ${it.usesSub ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50" data-idx="${idx}" data-action="toggleSub">
+                                Use sub-items
+                            </label>
+                        </div>
                     </div>
                 </td>
-                <td class="px-4 py-3 align-top"><input type="number" min="0" value="${it.qty}" ${it.usesSub ? 'disabled' : ''} class="w-24 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="qty"></td>
-                <td class="px-4 py-3 align-top"><input type="number" min="0" step="0.01" value="${it.rate}" ${it.usesSub ? 'disabled' : ''} class="w-32 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="rate"></td>
-                <td class="px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800" data-role="line-amount">${fmt(lineAmount(it))}</td>
-                <td class="px-4 py-3 align-top text-center no-print"><button class="text-slate-400 hover:text-red-500" data-action="delItem" data-idx="${idx}">✕</button></td>
+                <td class="item-cell item-cell--qty px-4 py-3 align-top" data-label="Qty">
+                    <input type="number" min="0" value="${it.qty}" ${it.usesSub ? 'disabled' : ''} class="w-full md:w-24 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="qty">
+                </td>
+                <td class="item-cell item-cell--rate px-4 py-3 align-top" data-label="Rate">
+                    <input type="number" min="0" step="0.01" value="${it.rate}" ${it.usesSub ? 'disabled' : ''} class="w-full md:w-32 text-right bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500" data-idx="${idx}" data-field="rate">
+                </td>
+                <td class="item-cell item-cell--amount px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800" data-label="Amount">
+                    <span class="item-cell__value" data-role="line-amount">${fmt(lineAmount(it))}</span>
+                </td>
+                <td class="item-cell item-cell--actions px-4 py-3 align-top text-center no-print" data-label="Remove">
+                    <button class="text-slate-400 hover:text-red-500" data-action="delItem" data-idx="${idx}">✕</button>
+                </td>
             </tr>
         `).join('');
     }
     
     function renderSubItems(item, itemIdx) {
         const subsHTML = (item.subs || []).map((si, sidx) => `
-            <div class="grid grid-cols-[1fr,auto,auto,auto,auto] gap-2 items-center text-sm">
-                <input class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${si.desc}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
-                <input type="number" min="0" value="${si.qty}" class="w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
-                <input type="number" min="0" step="0.01" value="${si.rate}" class="w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
-                <span class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-700 text-right pr-1" data-role="sub-line-amount">${fmt(toNum(si.qty) * toNum(si.rate))}</span>
-                <button class="text-slate-400 hover:text-red-500 text-xs no-print" data-action="delSubItem" data-idx="${itemIdx}" data-sidx="${sidx}">✕</button>
+            <div class="subitem-card print:bg-transparent print:border-0 print:shadow-none">
+                <div class="subitem-card__header">
+                    <input class="flex-1 bg-white dark:bg-slate-700/50 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${si.desc}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
+                    <button class="text-slate-400 hover:text-red-500 text-xs no-print" data-action="delSubItem" data-idx="${itemIdx}" data-sidx="${sidx}">✕</button>
+                </div>
+                <div class="subitem-card__grid">
+                    <label class="subitem-card__field">
+                        <span class="subitem-card__label">Qty</span>
+                        <input type="number" min="0" value="${si.qty}" class="w-full bg-white dark:bg-slate-700/50 rounded-md p-2 text-right focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
+                    </label>
+                    <label class="subitem-card__field">
+                        <span class="subitem-card__label">Rate</span>
+                        <input type="number" min="0" step="0.01" value="${si.rate}" class="w-full bg-white dark:bg-slate-700/50 rounded-md p-2 text-right focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
+                    </label>
+                    <div class="subitem-card__field">
+                        <span class="subitem-card__label">Amount</span>
+                        <span class="subitem-card__value" data-role="sub-line-amount">${fmt(toNum(si.qty) * toNum(si.rate))}</span>
+                    </div>
+                </div>
             </div>
         `).join('');
         return `
-            <div class="mt-2 pl-4 border-l-2 border-slate-200 dark:border-slate-600 space-y-2 print:border-gray-200">
+            <div class="subitem-stack print:border-gray-200">
                 ${subsHTML}
-                 <button class="no-print text-xs text-accent dark:text-accent-light font-semibold" data-action="addSubItem" data-idx="${itemIdx}">+ Add sub-item</button>
+                <button class="no-print text-xs text-accent dark:text-accent-light font-semibold" data-action="addSubItem" data-idx="${itemIdx}">+ Add sub-item</button>
             </div>
         `;
     }
@@ -648,6 +1335,16 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#total').textContent = fmt(total);
         $('#due').textContent = fmt(due);
 
+        const sync = (sel, val) => {
+            const el = $(sel);
+            if (el) el.textContent = val;
+        };
+        sync('#mobile-subtotal', fmt(subtotal));
+        sync('#mobile-tax', fmt(taxAmt));
+        sync('#mobile-total', fmt(total));
+        sync('#mobile-paid', fmt(totalPaid));
+        sync('#mobile-balance', fmt(due));
+
         // Update individual line item and sub-item amounts in the DOM
         $$('#items tbody tr').forEach((row, i) => {
             const item = state.items[i];
@@ -750,23 +1447,23 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'toggleTheme': toggleTheme(); break;
             case 'setView': setViewMode(target.dataset.view); break;
             case 'addRow':
-                state.items.push(getInitialState().items[0]);
+                state.items.push(createEmptyItem());
                 needsRerender = true;
                 break;
             case 'clearAll':
                 if (confirm('Are you sure you want to clear all items?')) {
-                    state.items = getInitialState().items;
+                    state.items = [createEmptyItem()];
                     needsRerender = true;
                 }
                 break;
             case 'delItem':
                 state.items.splice(idx, 1);
-                if (state.items.length === 0) state.items.push(getInitialState().items[0]);
+                if (state.items.length === 0) state.items.push(createEmptyItem());
                 needsRerender = true;
                 break;
             case 'addSubItem':
                 if (!state.items[idx].subs) state.items[idx].subs = [];
-                state.items[idx].subs.push({ desc: '', qty: 1, rate: 0 });
+                state.items[idx].subs.push(createEmptySubItem());
                 needsRerender = true;
                 break;
             case 'delSubItem':
@@ -774,7 +1471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 needsRerender = true;
                 break;
             case 'addPayment':
-                state.payments.push({ date: todayISO(), amount: 0, method: 'New Payment' });
+                state.payments.push(createEmptyPayment());
                 needsRerender = true;
                 break;
             case 'delPayment':
@@ -1077,24 +1774,45 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function setViewMode(mode) {
         const container = $('#main-container');
+        if (!container) return;
+
+        const normalized = ['pc', 'tablet', 'mobile'].includes(mode) ? mode : 'pc';
         const viewButtons = $$('[data-action="setView"]');
 
         container.classList.remove('max-w-5xl', 'max-w-3xl', 'max-w-md');
         viewButtons.forEach(btn => btn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white'));
-        
-        const activeButton = $(`[data-view="${mode}"]`);
-        activeButton.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
 
-        switch (mode) {
+        const activeButton = $(`[data-view="${normalized}"]`);
+        if (activeButton) {
+            activeButton.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+        }
+
+        switch (normalized) {
             case 'tablet': container.classList.add('max-w-3xl'); break;
             case 'mobile': container.classList.add('max-w-md'); break;
             default: container.classList.add('max-w-5xl'); break;
         }
-        storage.set('viewMode', mode);
+
+        document.body.classList.toggle('is-mobile-preview', normalized === 'mobile');
+
+        storage.set('viewMode', normalized);
     }
 
     function applyInitialViewMode() {
         setViewMode(storage.get('viewMode') || 'pc');
+    }
+
+    function watchMobileViewport() {
+        const query = window.matchMedia('(max-width: 640px)');
+        const apply = (event) => {
+            document.body.classList.toggle('is-mobile-width', event.matches);
+        };
+        if (typeof query.addEventListener === 'function') {
+            query.addEventListener('change', apply);
+        } else if (typeof query.addListener === 'function') {
+            query.addListener(apply);
+        }
+        apply(query);
     }
 
     // ---------- Theme Management ----------
@@ -1125,6 +1843,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------- App Initialization ----------
     function init() {
         applyInitialTheme();
+        watchMobileViewport();
         applyInitialViewMode();
         setupDropdowns();
         setupEventListeners();
