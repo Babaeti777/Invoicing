@@ -401,8 +401,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------- Utilities ----------
     const $ = (sel, root = document) => root.querySelector(sel);
     const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+    const el = (tag, { className, text, attrs = {}, dataset = {}, props = {} } = {}, children = []) => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        Object.entries(attrs).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) node.setAttribute(key, String(value));
+        });
+        Object.entries(dataset).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) node.dataset[key] = String(value);
+        });
+        Object.assign(node, props);
+        (Array.isArray(children) ? children : [children]).forEach(child => {
+            if (child !== null && child !== undefined) node.appendChild(child);
+        });
+        return node;
+    };
     const fmt = n => (isNaN(n) ? 0 : n).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    const todayISO = () => new Date().toISOString().slice(0, 10);
+    const todayISO = () => {
+        const now = new Date();
+        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 10);
+    };
     const genId = (type) => `${type === 'Estimate' ? 'EST' : 'INV'}-${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}`;
     const truthy = (v) => {
         if (typeof v === 'boolean') return v;
@@ -530,113 +550,275 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderItems() {
         const tbody = $('#items tbody');
-        tbody.innerHTML = state.items.map((it, idx) => `
-            <tr class="border-b border-slate-200 dark:border-slate-700 last:border-b-0 print:border-gray-300 md:border-b">
-                <td class="px-4 py-3 align-top" data-label="Item">
-                    <input class="w-full bg-transparent focus:outline-none" placeholder="Item description" value="${it.desc}" data-idx="${idx}" data-field="desc">
-                    ${it.usesSub ? renderSubItems(it, idx) : ''}
-                    <div class="no-print mt-2">
-                        <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
-                            <input type="checkbox" ${it.usesSub ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50" data-idx="${idx}" data-action="toggleSub">
-                            Use sub-items
-                        </label>
-                    </div>
-                </td>
-                <td class="px-4 py-3 align-top" data-label="Qty">
-                    <input type="number" min="0" value="${it.qty}" ${it.usesSub ? 'disabled' : ''} class="w-24 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="qty">
-                </td>
-                <td class="px-4 py-3 align-top" data-label="Rate">
-                    <input type="number" min="0" step="0.01" value="${it.rate}" ${it.usesSub ? 'disabled' : ''} class="w-32 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="rate">
-                </td>
-                <td class="px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800" data-role="line-amount" data-label="Amount">
-                    ${fmt(lineAmount(it))}
-                </td>
-                <td class="px-4 py-3 align-top text-center no-print">
-                    <button class="text-slate-400 hover:text-red-500" data-action="delItem" data-idx="${idx}">✕</button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.replaceChildren();
+        state.items.forEach((item, idx) => {
+            const row = el('tr', {
+                className: 'border-b border-slate-200 dark:border-slate-700 last:border-b-0 print:border-gray-300 md:border-b'
+            });
+
+            const descCell = el('td', {
+                className: 'px-4 py-3 align-top',
+                dataset: { label: 'Item' }
+            });
+            const descInput = el('input', {
+                className: 'w-full bg-transparent focus:outline-none',
+                attrs: { placeholder: 'Item description' },
+                dataset: { idx, field: 'desc' },
+                props: { value: item.desc || '' }
+            });
+            descCell.appendChild(descInput);
+
+            if (item.usesSub) {
+                descCell.appendChild(renderSubItems(item, idx));
+            }
+
+            const toggleWrap = el('div', { className: 'no-print mt-2' });
+            const toggleLabel = el('label', { className: 'flex items-center gap-2 text-xs text-slate-500 cursor-pointer' });
+            const toggleInput = el('input', {
+                className: 'rounded text-accent focus:ring-accent/50',
+                attrs: { type: 'checkbox' },
+                dataset: { idx, action: 'toggleSub' },
+                props: { checked: Boolean(item.usesSub) }
+            });
+            toggleLabel.append(toggleInput, document.createTextNode('Use sub-items'));
+            toggleWrap.appendChild(toggleLabel);
+            descCell.appendChild(toggleWrap);
+
+            const qtyCell = el('td', {
+                className: 'px-4 py-3 align-top',
+                dataset: { label: 'Qty' }
+            });
+            const qtyInput = el('input', {
+                className: 'w-24 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right',
+                attrs: { type: 'number', min: '0' },
+                dataset: { idx, field: 'qty' },
+                props: { value: item.qty ?? 0, disabled: Boolean(item.usesSub) }
+            });
+            qtyCell.appendChild(qtyInput);
+
+            const rateCell = el('td', {
+                className: 'px-4 py-3 align-top',
+                dataset: { label: 'Rate' }
+            });
+            const rateInput = el('input', {
+                className: 'w-32 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right',
+                attrs: { type: 'number', min: '0', step: '0.01' },
+                dataset: { idx, field: 'rate' },
+                props: { value: item.rate ?? 0, disabled: Boolean(item.usesSub) }
+            });
+            rateCell.appendChild(rateInput);
+
+            const amountCell = el('td', {
+                className: 'px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800',
+                dataset: { role: 'line-amount', label: 'Amount' },
+                text: fmt(lineAmount(item))
+            });
+
+            const actionCell = el('td', {
+                className: 'px-4 py-3 align-top text-center no-print'
+            });
+            const delButton = el('button', {
+                className: 'text-slate-400 hover:text-red-500',
+                dataset: { action: 'delItem', idx }
+            }, '✕');
+            actionCell.appendChild(delButton);
+
+            row.append(descCell, qtyCell, rateCell, amountCell, actionCell);
+            tbody.appendChild(row);
+        });
     }
     
     function renderSubItems(item, itemIdx) {
-        const subsHTML = (item.subs || []).map((si, sidx) => `
-            <div class="grid grid-cols-[1fr,auto,auto,auto,auto] gap-2 items-center text-sm">
-                <input class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${si.desc}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
-                <input type="number" min="0" value="${si.qty}" class="w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
-                <input type="number" min="0" step="0.01" value="${si.rate}" class="w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
-                <span class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-700 text-right pr-1" data-role="sub-line-amount">${fmt(toNum(si.qty) * toNum(si.rate))}</span>
-                <button class="text-slate-400 hover:text-red-500 text-xs no-print" data-action="delSubItem" data-idx="${itemIdx}" data-sidx="${sidx}">✕</button>
-            </div>
-        `).join('');
-        return `
-            <div class="mt-2 pl-4 border-l-2 border-slate-200 dark:border-slate-600 space-y-2 print:border-gray-200">
-                ${subsHTML}
-                 <button class="no-print text-xs text-accent dark:text-accent-light font-semibold" data-action="addSubItem" data-idx="${itemIdx}">+ Add sub-item</button>
-            </div>
-        `;
+        const container = el('div', {
+            className: 'mt-2 pl-4 border-l-2 border-slate-200 dark:border-slate-600 space-y-2 print:border-gray-200'
+        });
+        (item.subs || []).forEach((subItem, sidx) => {
+            const subRow = el('div', {
+                className: 'grid grid-cols-[1fr,auto,auto,auto,auto] gap-2 items-center text-sm'
+            });
+
+            const descInput = el('input', {
+                className: 'w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent',
+                attrs: { placeholder: 'Sub-item description' },
+                dataset: { idx: itemIdx, sidx, subField: 'desc' },
+                props: { value: subItem.desc || '' }
+            });
+            const qtyInput = el('input', {
+                className: 'w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent',
+                attrs: { type: 'number', min: '0' },
+                dataset: { idx: itemIdx, sidx, subField: 'qty' },
+                props: { value: subItem.qty ?? 0 }
+            });
+            const rateInput = el('input', {
+                className: 'w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent',
+                attrs: { type: 'number', min: '0', step: '0.01' },
+                dataset: { idx: itemIdx, sidx, subField: 'rate' },
+                props: { value: subItem.rate ?? 0 }
+            });
+            const amount = el('span', {
+                className: 'font-medium text-slate-600 dark:text-slate-300 print:text-gray-700 text-right pr-1',
+                dataset: { role: 'sub-line-amount' },
+                text: fmt(toNum(subItem.qty) * toNum(subItem.rate))
+            });
+            const delButton = el('button', {
+                className: 'text-slate-400 hover:text-red-500 text-xs no-print',
+                dataset: { action: 'delSubItem', idx: itemIdx, sidx }
+            }, '✕');
+
+            subRow.append(descInput, qtyInput, rateInput, amount, delButton);
+            container.appendChild(subRow);
+        });
+
+        const addButton = el('button', {
+            className: 'no-print text-xs text-accent dark:text-accent-light font-semibold',
+            dataset: { action: 'addSubItem', idx: itemIdx }
+        }, '+ Add sub-item');
+        container.appendChild(addButton);
+        return container;
     }
 
     function renderPayments() {
         const container = $('#paymentTracker');
         container.classList.toggle('hidden', !state.showPaymentTracker);
-        if (!state.showPaymentTracker) return;
+        if (!state.showPaymentTracker) {
+            container.replaceChildren();
+            return;
+        }
 
-        const tableContent = state.payments.length > 0 ? `
-            <div class="space-y-2">
-                ${state.payments.map((p, idx) => `
-                    <div class="grid grid-cols-[auto,1fr,auto,auto] gap-2 items-center text-sm">
-                        <input type="date" value="${p.date}" class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="date">
-                        <input type="text" value="${p.method}" placeholder="Method" class="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="method">
-                        <input type="number" value="${p.amount}" class="w-24 text-right bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent" data-pay-idx="${idx}" data-pay-field="amount">
-                        <button class="text-slate-400 hover:text-red-500 text-xs" data-action="delPayment" data-idx="${idx}">✕</button>
-                    </div>
-                `).join('')}
-            </div>
-        ` : `<p class="text-xs text-slate-500 text-center">No payments recorded.</p>`;
-        
-        container.innerHTML = `
-            ${tableContent}
-            <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
-                 <button data-action="addPayment" class="px-3 py-1 w-full font-semibold text-accent-dark dark:text-accent-light bg-accent/20 hover:bg-accent/30 rounded-md transition-colors">Add Payment</button>
-            </div>
-        `;
+        const elements = [];
+        if (state.payments.length > 0) {
+            const listWrapper = el('div', { className: 'space-y-2' });
+            state.payments.forEach((payment, idx) => {
+                const row = el('div', { className: 'grid grid-cols-[auto,1fr,auto,auto] gap-2 items-center text-sm' });
+                const dateInput = el('input', {
+                    className: 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent',
+                    attrs: { type: 'date' },
+                    dataset: { payIdx: idx, payField: 'date' },
+                    props: { value: payment.date || '' }
+                });
+                const methodInput = el('input', {
+                    className: 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent',
+                    attrs: { type: 'text', placeholder: 'Method' },
+                    dataset: { payIdx: idx, payField: 'method' },
+                    props: { value: payment.method || '' }
+                });
+                const amountInput = el('input', {
+                    className: 'w-24 text-right bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded-md shadow-sm p-1 focus:ring-accent focus:border-accent',
+                    attrs: { type: 'number' },
+                    dataset: { payIdx: idx, payField: 'amount' },
+                    props: { value: payment.amount ?? 0 }
+                });
+                const delButton = el('button', {
+                    className: 'text-slate-400 hover:text-red-500 text-xs',
+                    dataset: { action: 'delPayment', idx }
+                }, '✕');
+                row.append(dateInput, methodInput, amountInput, delButton);
+                listWrapper.appendChild(row);
+            });
+            elements.push(listWrapper);
+        } else {
+            elements.push(el('p', {
+                className: 'text-xs text-slate-500 text-center',
+                text: 'No payments recorded.'
+            }));
+        }
+
+        const actions = el('div', {
+            className: 'mt-3 pt-3 border-t border-slate-200 dark:border-slate-600'
+        }, el('button', {
+            className: 'px-3 py-1 w-full font-semibold text-accent-dark dark:text-accent-light bg-accent/20 hover:bg-accent/30 rounded-md transition-colors',
+            dataset: { action: 'addPayment' }
+        }, 'Add Payment'));
+
+        elements.push(actions);
+        container.replaceChildren(...elements);
     }
 
     function renderAdjustments() {
         const container = $('#adjustments');
-        container.innerHTML = state.adjustments.map((adj, idx) => `
-             <div class="border-t border-slate-200 dark:border-slate-700 pt-2 print:border-gray-200">
-                <div class="flex justify-between items-center">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" ${adj.enabled ? 'checked' : ''} class="rounded text-accent focus:ring-accent/50 no-print" data-adj-idx="${idx}" data-action="toggleAdj">
-                        <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">${adj.label}</span>
-                    </label>
-                    ${adj.enabled ? `
-                    <div class="flex items-center gap-2">
-                      <input type="number" min="0" step="0.01" value="${adj.pct}" class="w-20 text-right bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print" data-adj-idx="${idx}" data-field="pct">
-                      <span class="text-slate-500 dark:text-slate-400 print:text-gray-600">${adj.pct}%</span>
-                    </div>` : ''}
-                </div>
-                ${adj.enabled ? `
-                <div class="flex justify-between items-center text-sm mt-1">
-                    <span class="text-slate-500 dark:text-slate-400 pl-4 print:text-gray-600">${adj.label} amount</span>
-                    <span id="${adj.id}Amt" class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-800">$0.00</span>
-                </div>` : ''}
-            </div>
-        `).join('');
+        container.replaceChildren();
+        state.adjustments.forEach((adj, idx) => {
+            const wrapper = el('div', {
+                className: 'border-t border-slate-200 dark:border-slate-700 pt-2 print:border-gray-200'
+            });
+            const header = el('div', { className: 'flex justify-between items-center' });
+            const label = el('label', { className: 'flex items-center gap-2 cursor-pointer' });
+            const toggle = el('input', {
+                className: 'rounded text-accent focus:ring-accent/50 no-print',
+                attrs: { type: 'checkbox' },
+                dataset: { adjIdx: idx, action: 'toggleAdj' },
+                props: { checked: Boolean(adj.enabled) }
+            });
+            const labelText = el('span', {
+                className: 'text-slate-500 dark:text-slate-400 print:text-gray-600',
+                text: adj.label
+            });
+            label.append(toggle, labelText);
+            header.appendChild(label);
+
+            if (adj.enabled) {
+                const controls = el('div', { className: 'flex items-center gap-2' });
+                const pctInput = el('input', {
+                    className: 'w-20 text-right bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-accent focus:border-accent no-print',
+                    attrs: { type: 'number', min: '0', step: '0.01' },
+                    dataset: { adjIdx: idx, field: 'pct' },
+                    props: { value: adj.pct ?? 0 }
+                });
+                const pctLabel = el('span', {
+                    className: 'text-slate-500 dark:text-slate-400 print:text-gray-600',
+                    dataset: { role: 'adj-pct', idx },
+                    text: `${adj.pct}%`
+                });
+                controls.append(pctInput, pctLabel);
+                header.appendChild(controls);
+            }
+            wrapper.appendChild(header);
+
+            if (adj.enabled) {
+                const amountRow = el('div', { className: 'flex justify-between items-center text-sm mt-1' });
+                const amountLabel = el('span', {
+                    className: 'text-slate-500 dark:text-slate-400 pl-4 print:text-gray-600',
+                    text: `${adj.label} amount`
+                });
+                const amountValue = el('span', {
+                    className: 'font-medium text-slate-600 dark:text-slate-300 print:text-gray-800',
+                    attrs: { id: `${adj.id}Amt` },
+                    text: '$0.00'
+                });
+                amountRow.append(amountLabel, amountValue);
+                wrapper.appendChild(amountRow);
+            }
+
+            container.appendChild(wrapper);
+        });
     }
     
     function renderAttachments() {
         const list = $('#attachments');
-        list.innerHTML = state.attachments.map((a, i) => `
-            <div class="flex items-center justify-between gap-3 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-sm">
-                <div class="truncate">
-                    <strong class="font-medium text-slate-700 dark:text-slate-200">${a.filename}</strong> 
-                    <span class="text-slate-500 dark:text-slate-400 text-xs">(${a.mime}, ${Math.round(a.size/1024)} KB)</span>
-                </div>
-                <button class="text-slate-400 hover:text-red-500" data-action="delAttachment" data-idx="${i}">✕</button>
-            </div>
-        `).join('');
+        list.replaceChildren();
+        state.attachments.forEach((attachment, idx) => {
+            const row = el('div', {
+                className: 'flex items-center justify-between gap-3 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-sm'
+            });
+            const info = el('div', { className: 'truncate' });
+            const name = el('strong', {
+                className: 'font-medium text-slate-700 dark:text-slate-200',
+                text: attachment.filename
+            });
+            const meta = el('span', {
+                className: 'text-slate-500 dark:text-slate-400 text-xs',
+                text: `(${attachment.mime}, ${Math.round(attachment.size / 1024)} KB)`
+            });
+            info.append(name, document.createTextNode(' '), meta);
+
+            const delButton = el('button', {
+                className: 'text-slate-400 hover:text-red-500',
+                dataset: { action: 'delAttachment', idx }
+            }, '✕');
+
+            row.append(info, delButton);
+            list.appendChild(row);
+        });
     }
 
     function renderPrintViews() {
@@ -714,6 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // These are outside the main app card, so they get separate listeners.
         $('#filePicker').addEventListener('change', handleFileLoad);
         $('#logoPicker').addEventListener('change', handleLogoUpload);
+        $('#attachPicker').addEventListener('change', handleAttachmentChange);
     }
     
     function handleLiveUpdate(e) {
@@ -731,8 +914,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (subField && idx !== undefined && sidx !== undefined) {
             state.items[idx].subs[sidx][subField] = target.type === 'number' ? toNum(target.value) : target.value;
             requiresRecalc = true;
-        } else if (field === 'pct' && adjIdx !== undefined) { 
+        } else if (field === 'pct' && adjIdx !== undefined) {
              state.adjustments[adjIdx].pct = toNum(target.value);
+             const pctDisplay = document.querySelector(`[data-role="adj-pct"][data-idx="${adjIdx}"]`);
+             if (pctDisplay) pctDisplay.textContent = `${state.adjustments[adjIdx].pct}%`;
              requiresRecalc = true;
         } else {
             const id = target.id;
