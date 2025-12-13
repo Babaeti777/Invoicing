@@ -11,6 +11,12 @@
   <!-- SheetJS for Excel import/export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Google API Client for Drive -->
+  <script src="https://apis.google.com/js/api.js"></script>
+
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,8 +196,44 @@
         </div>
         <!-- END: Print-Only Header -->
 
+        <!-- Google Sign-In Section (shown when not authenticated) -->
+        <div id="auth-section" class="no-print pb-6 mb-6 border-b border-slate-200 dark:border-slate-700">
+          <div class="flex flex-col items-center justify-center gap-4 p-8 bg-gradient-to-r from-accent/10 to-accent-light/10 dark:from-accent/20 dark:to-accent-light/20 rounded-xl">
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Welcome to OAK Invoicing</h2>
+              <p class="text-slate-600 dark:text-slate-400 mb-4">Sign in with Google to access your invoices from any device</p>
+            </div>
+            <div id="google-signin-button"></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md text-center">
+              Your invoices will be automatically saved to your Google Drive. Access them from any device, anywhere.
+            </p>
+          </div>
+        </div>
+
+        <!-- User Profile Section (shown when authenticated) -->
+        <div id="user-profile" class="hidden no-print pb-4 mb-4 border-b border-slate-200 dark:border-slate-700">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img id="user-avatar" src="" alt="User" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-white" id="user-name"></p>
+                <p class="text-xs text-slate-500 dark:text-slate-400" id="user-email"></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-xs font-medium text-green-700 dark:text-green-300" id="sync-text">Synced</span>
+              </div>
+              <button data-action="signOut" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">Sign Out</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Header Section -->
-        <header class="pb-6 border-b border-slate-200 dark:border-slate-700 print-border-none">
+        <header id="app-header" class="hidden pb-6 border-b border-slate-200 dark:border-slate-700 print-border-none">
           <div class="flex flex-wrap items-center justify-between gap-6">
             <!-- Brand Info -->
             <div class="flex items-center gap-4 no-print">
@@ -213,8 +255,16 @@
           <div class="no-print mt-6 flex flex-wrap items-center justify-between gap-4">
               <div class="flex items-center gap-2">
                 <input id="filePicker" type="file" accept=".xlsx" class="hidden" />
-                <button data-action="loadExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Load from Excel</button>
-                <button data-action="saveExcel" class="px-4 py-2 text-sm font-semibold text-slate-900 bg-accent hover:bg-accent-light rounded-lg transition-colors">Save to Excel</button>
+                <button data-action="loadFromDrive" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                  <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/></svg>
+                  Load from Drive
+                </button>
+                <button data-action="saveToDrive" class="px-4 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-light rounded-lg transition-colors">
+                  <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg>
+                  Save to Drive
+                </button>
+                <button data-action="loadExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Load Local Excel</button>
+                <button data-action="saveExcel" class="px-4 py-2 text-sm font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">Save Local Excel</button>
               </div>
               <div class="flex items-center gap-2">
                  <div class="flex items-center gap-2">
@@ -231,7 +281,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="mt-8">
+        <main id="main-content" class="hidden mt-8">
           <div class="flex flex-col md:flex-row justify-between gap-8">
               
               <!-- Bill To Section -->
@@ -410,18 +460,396 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof v === 'string') return /^(true|t|1|yes|y)$/i.test(v.trim());
         return false;
     };
-    const toNum = (v) => { 
+    const toNum = (v) => {
         if (typeof v === 'string') v = v.replace(/[$,]/g, '');
         const n = parseFloat(v);
-        return isNaN(n) ? 0 : n;
+        return isNaN(n) ? 0 : Math.max(0, n); // Ensure non-negative
     };
     const round2 = (n) => Math.round((toNum(n)) * 100) / 100;
-    const isoAddDays = (iso, d) => { 
+    const isoAddDays = (iso, d) => {
         if (!iso) return '';
         const dt = new Date(iso);
         dt.setUTCDate(dt.getUTCDate() + toNum(d));
         return dt.toISOString().slice(0, 10);
     };
+    // HTML escape to prevent XSS
+    const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    };
+
+    // ---------- Google Authentication & Drive ----------
+    const GOOGLE_CONFIG = {
+        // IMPORTANT: Replace with your actual Google OAuth Client ID
+        // Get one at: https://console.cloud.google.com/apis/credentials
+        CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com',
+        API_KEY: 'YOUR_API_KEY_HERE',
+        DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+        SCOPES: 'https://www.googleapis.com/auth/drive.file',
+        FOLDER_NAME: 'OAK_Invoicing_Data'
+    };
+
+    let googleAuth = {
+        isSignedIn: false,
+        accessToken: null,
+        userInfo: null,
+        folderId: null
+    };
+
+    function initGoogleAuth() {
+        // Initialize Google Identity Services
+        if (typeof google === 'undefined' || !google.accounts) {
+            console.error('Google Identity Services not loaded');
+            return;
+        }
+
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CONFIG.CLIENT_ID,
+            callback: handleGoogleSignIn,
+            auto_select: false
+        });
+
+        google.accounts.id.renderButton(
+            document.getElementById('google-signin-button'),
+            {
+                theme: 'outline',
+                size: 'large',
+                text: 'signin_with',
+                shape: 'rectangular'
+            }
+        );
+
+        // Check if user was previously signed in
+        const savedToken = sessionStorage.getItem('google_access_token');
+        const savedUserInfo = sessionStorage.getItem('google_user_info');
+        if (savedToken && savedUserInfo) {
+            googleAuth.accessToken = savedToken;
+            googleAuth.userInfo = JSON.parse(savedUserInfo);
+            googleAuth.isSignedIn = true;
+            initGapi().then(() => {
+                showAuthenticatedUI();
+            });
+        }
+    }
+
+    function handleGoogleSignIn(response) {
+        // Decode the JWT credential
+        const credential = response.credential;
+        const payload = JSON.parse(atob(credential.split('.')[1]));
+
+        googleAuth.userInfo = {
+            name: payload.name,
+            email: payload.email,
+            picture: payload.picture
+        };
+
+        // Get access token for Drive API
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CONFIG.CLIENT_ID,
+            scope: GOOGLE_CONFIG.SCOPES,
+            callback: (tokenResponse) => {
+                googleAuth.accessToken = tokenResponse.access_token;
+                googleAuth.isSignedIn = true;
+
+                // Save to session storage
+                sessionStorage.setItem('google_access_token', googleAuth.accessToken);
+                sessionStorage.setItem('google_user_info', JSON.stringify(googleAuth.userInfo));
+
+                initGapi().then(() => {
+                    showAuthenticatedUI();
+                    showNotification('Signed in successfully!', 'success');
+                });
+            }
+        });
+
+        client.requestAccessToken();
+    }
+
+    function initGapi() {
+        return new Promise((resolve, reject) => {
+            if (typeof gapi === 'undefined') {
+                reject('Google API not loaded');
+                return;
+            }
+
+            gapi.load('client', async () => {
+                try {
+                    await gapi.client.init({
+                        apiKey: GOOGLE_CONFIG.API_KEY,
+                        discoveryDocs: GOOGLE_CONFIG.DISCOVERY_DOCS
+                    });
+
+                    gapi.client.setToken({ access_token: googleAuth.accessToken });
+
+                    // Find or create the invoicing folder
+                    await ensureInvoicingFolder();
+                    resolve();
+                } catch (error) {
+                    console.error('Error initializing GAPI:', error);
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    async function ensureInvoicingFolder() {
+        try {
+            const response = await gapi.client.drive.files.list({
+                q: `name='${GOOGLE_CONFIG.FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                spaces: 'drive',
+                fields: 'files(id, name)'
+            });
+
+            if (response.result.files && response.result.files.length > 0) {
+                googleAuth.folderId = response.result.files[0].id;
+            } else {
+                // Create the folder
+                const folderMetadata = {
+                    name: GOOGLE_CONFIG.FOLDER_NAME,
+                    mimeType: 'application/vnd.google-apps.folder'
+                };
+
+                const folder = await gapi.client.drive.files.create({
+                    resource: folderMetadata,
+                    fields: 'id'
+                });
+
+                googleAuth.folderId = folder.result.id;
+            }
+        } catch (error) {
+            console.error('Error ensuring folder exists:', error);
+            showNotification('Error accessing Google Drive', 'error');
+        }
+    }
+
+    function showAuthenticatedUI() {
+        $('#auth-section').classList.add('hidden');
+        $('#user-profile').classList.remove('hidden');
+        $('#app-header').classList.remove('hidden');
+        $('#main-content').classList.remove('hidden');
+
+        $('#user-name').textContent = googleAuth.userInfo.name;
+        $('#user-email').textContent = googleAuth.userInfo.email;
+        $('#user-avatar').src = googleAuth.userInfo.picture;
+
+        // Auto-load latest invoice from Drive
+        autoLoadFromDrive();
+    }
+
+    function signOut() {
+        googleAuth.isSignedIn = false;
+        googleAuth.accessToken = null;
+        googleAuth.userInfo = null;
+        googleAuth.folderId = null;
+
+        sessionStorage.removeItem('google_access_token');
+        sessionStorage.removeItem('google_user_info');
+
+        if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.disableAutoSelect();
+        }
+
+        $('#auth-section').classList.remove('hidden');
+        $('#user-profile').classList.add('hidden');
+        $('#app-header').classList.add('hidden');
+        $('#main-content').classList.add('hidden');
+
+        showNotification('Signed out successfully', 'info');
+    }
+
+    async function saveToDrive() {
+        if (!googleAuth.isSignedIn) {
+            showNotification('Please sign in to save to Google Drive', 'warn');
+            return;
+        }
+
+        try {
+            updateSyncStatus('syncing', 'Saving...');
+
+            const wb = generateWorkbook();
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+            const fileName = `repository_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+            // Check if file already exists
+            const existingFiles = await gapi.client.drive.files.list({
+                q: `name='${fileName}' and '${googleAuth.folderId}' in parents and trashed=false`,
+                spaces: 'drive',
+                fields: 'files(id, name)'
+            });
+
+            const metadata = {
+                name: fileName,
+                mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                parents: [googleAuth.folderId]
+            };
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
+
+            const fileId = existingFiles.result.files && existingFiles.result.files.length > 0
+                ? existingFiles.result.files[0].id
+                : null;
+
+            const url = fileId
+                ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+                : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+
+            const response = await fetch(url, {
+                method: fileId ? 'PATCH' : 'POST',
+                headers: {
+                    'Authorization': `Bearer ${googleAuth.accessToken}`
+                },
+                body: form
+            });
+
+            if (response.ok) {
+                updateSyncStatus('synced', 'Synced');
+                showNotification('Saved to Google Drive successfully!', 'success');
+            } else {
+                throw new Error('Failed to save to Drive');
+            }
+        } catch (error) {
+            console.error('Error saving to Drive:', error);
+            updateSyncStatus('error', 'Sync failed');
+            showNotification('Error saving to Google Drive', 'error');
+        }
+    }
+
+    async function loadFromDrive() {
+        if (!googleAuth.isSignedIn) {
+            showNotification('Please sign in to load from Google Drive', 'warn');
+            return;
+        }
+
+        try {
+            updateSyncStatus('syncing', 'Loading...');
+
+            const response = await gapi.client.drive.files.list({
+                q: `'${googleAuth.folderId}' in parents and trashed=false and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`,
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc',
+                pageSize: 10
+            });
+
+            if (!response.result.files || response.result.files.length === 0) {
+                showNotification('No invoices found in Google Drive', 'warn');
+                updateSyncStatus('synced', 'Synced');
+                return;
+            }
+
+            const files = response.result.files;
+            let fileId;
+
+            if (files.length === 1) {
+                fileId = files[0].id;
+            } else {
+                const fileList = files.map((f, i) => `${i + 1}. ${f.name} (${new Date(f.modifiedTime).toLocaleDateString()})`).join('\n');
+                const choice = prompt(`Multiple files found. Choose one:\n${fileList}\n\nEnter number (1-${files.length}):`, '1');
+                const idx = parseInt(choice) - 1;
+                if (idx >= 0 && idx < files.length) {
+                    fileId = files[idx].id;
+                } else {
+                    updateSyncStatus('synced', 'Synced');
+                    return;
+                }
+            }
+
+            const file = await gapi.client.drive.files.get({
+                fileId: fileId,
+                alt: 'media'
+            });
+
+            const arrayBuffer = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: {
+                    'Authorization': `Bearer ${googleAuth.accessToken}`
+                }
+            }).then(r => r.arrayBuffer());
+
+            const wb = XLSX.read(arrayBuffer, { type: 'array' });
+            lastWorkbook = wb;
+
+            const recs = sheetToJSON(wb, 'Records');
+            if (!recs.length) {
+                showNotification('No records found in file', 'warn');
+                updateSyncStatus('synced', 'Synced');
+                return;
+            }
+
+            let id = recs[0].id;
+            if (recs.length > 1) {
+                const msg = 'Multiple records found. Enter an ID to load:\n' + recs.map(r => `${r.id} — ${r.type} #${r.number}`).join('\n');
+                const typed = prompt(msg, recs[0].id);
+                if (typed) id = typed; else {
+                    updateSyncStatus('synced', 'Synced');
+                    return;
+                }
+            }
+
+            loadRecordFromWorkbook(wb, id);
+            updateSyncStatus('synced', 'Synced');
+            showNotification('Loaded from Google Drive successfully!', 'success');
+        } catch (error) {
+            console.error('Error loading from Drive:', error);
+            updateSyncStatus('error', 'Sync failed');
+            showNotification('Error loading from Google Drive', 'error');
+        }
+    }
+
+    async function autoLoadFromDrive() {
+        if (!googleAuth.isSignedIn) return;
+
+        try {
+            const response = await gapi.client.drive.files.list({
+                q: `'${googleAuth.folderId}' in parents and trashed=false and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`,
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc',
+                pageSize: 1
+            });
+
+            if (response.result.files && response.result.files.length > 0) {
+                const fileId = response.result.files[0].id;
+
+                const arrayBuffer = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                    headers: {
+                        'Authorization': `Bearer ${googleAuth.accessToken}`
+                    }
+                }).then(r => r.arrayBuffer());
+
+                const wb = XLSX.read(arrayBuffer, { type: 'array' });
+                lastWorkbook = wb;
+
+                const recs = sheetToJSON(wb, 'Records');
+                if (recs.length > 0) {
+                    loadRecordFromWorkbook(wb, recs[0].id);
+                }
+            }
+        } catch (error) {
+            console.error('Error auto-loading from Drive:', error);
+        }
+    }
+
+    function updateSyncStatus(status, text) {
+        const syncStatus = $('#sync-status');
+        const syncText = $('#sync-text');
+
+        syncStatus.classList.remove('bg-green-100', 'dark:bg-green-900/30', 'bg-yellow-100', 'dark:bg-yellow-900/30', 'bg-red-100', 'dark:bg-red-900/30');
+
+        if (status === 'synced') {
+            syncStatus.classList.add('bg-green-100', 'dark:bg-green-900/30');
+        } else if (status === 'syncing') {
+            syncStatus.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
+        } else if (status === 'error') {
+            syncStatus.classList.add('bg-red-100', 'dark:bg-red-900/30');
+        }
+
+        syncText.textContent = text;
+    }
 
     // ---------- State Management ----------
     let state = getInitialState();
@@ -533,7 +961,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = state.items.map((it, idx) => `
             <tr class="border-b border-slate-200 dark:border-slate-700 last:border-b-0 print:border-gray-300 md:border-b">
                 <td class="px-4 py-3 align-top" data-label="Item">
-                    <input class="w-full bg-transparent focus:outline-none" placeholder="Item description" value="${it.desc}" data-idx="${idx}" data-field="desc">
+                    <input class="w-full bg-transparent focus:outline-none" placeholder="Item description" value="${escapeHtml(it.desc)}" data-idx="${idx}" data-field="desc">
                     ${it.usesSub ? renderSubItems(it, idx) : ''}
                     <div class="no-print mt-2">
                         <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
@@ -543,10 +971,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td class="px-4 py-3 align-top" data-label="Qty">
-                    <input type="number" min="0" value="${it.qty}" ${it.usesSub ? 'disabled' : ''} class="w-24 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="qty">
+                    <input type="number" min="0" value="${escapeHtml(it.qty)}" ${it.usesSub ? 'disabled' : ''} class="w-24 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="qty">
                 </td>
                 <td class="px-4 py-3 align-top" data-label="Rate">
-                    <input type="number" min="0" step="0.01" value="${it.rate}" ${it.usesSub ? 'disabled' : ''} class="w-32 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="rate">
+                    <input type="number" min="0" step="0.01" value="${escapeHtml(it.rate)}" ${it.usesSub ? 'disabled' : ''} class="w-32 bg-transparent focus:outline-none disabled:text-slate-400 dark:disabled:text-slate-500 text-right" data-idx="${idx}" data-field="rate">
                 </td>
                 <td class="px-4 py-3 align-top text-right font-medium text-slate-600 dark:text-slate-300 print:text-gray-800" data-role="line-amount" data-label="Amount">
                     ${fmt(lineAmount(it))}
@@ -561,9 +989,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSubItems(item, itemIdx) {
         const subsHTML = (item.subs || []).map((si, sidx) => `
             <div class="grid grid-cols-[1fr,auto,auto,auto,auto] gap-2 items-center text-sm">
-                <input class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${si.desc}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
-                <input type="number" min="0" value="${si.qty}" class="w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
-                <input type="number" min="0" step="0.01" value="${si.rate}" class="w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
+                <input class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" placeholder="Sub-item description" value="${escapeHtml(si.desc)}" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="desc">
+                <input type="number" min="0" value="${escapeHtml(si.qty)}" class="w-16 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="qty">
+                <input type="number" min="0" step="0.01" value="${escapeHtml(si.rate)}" class="w-20 text-right bg-slate-100 dark:bg-slate-700/50 rounded-md p-1 focus:outline-none focus:ring-1 focus:ring-accent print-bg-transparent" data-idx="${itemIdx}" data-sidx="${sidx}" data-sub-field="rate">
                 <span class="font-medium text-slate-600 dark:text-slate-300 print:text-gray-700 text-right pr-1" data-role="sub-line-amount">${fmt(toNum(si.qty) * toNum(si.rate))}</span>
                 <button class="text-slate-400 hover:text-red-500 text-xs no-print" data-action="delSubItem" data-idx="${itemIdx}" data-sidx="${sidx}">✕</button>
             </div>
@@ -710,10 +1138,11 @@ document.addEventListener('DOMContentLoaded', () => {
         app.addEventListener('input', handleLiveUpdate);
         app.addEventListener('click', handleClick);
         app.addEventListener('change', handleStructuralChange);
-        
+
         // These are outside the main app card, so they get separate listeners.
         $('#filePicker').addEventListener('change', handleFileLoad);
         $('#logoPicker').addEventListener('change', handleLogoUpload);
+        $('#attachPicker').addEventListener('change', handleAttachmentChange);
     }
     
     function handleLiveUpdate(e) {
@@ -787,6 +1216,9 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'uploadLogo': $('#logoPicker').click(); break;
             case 'loadExcel': $('#filePicker').click(); break;
             case 'saveExcel': handleFileSave(); break;
+            case 'saveToDrive': saveToDrive(); break;
+            case 'loadFromDrive': loadFromDrive(); break;
+            case 'signOut': signOut(); break;
             case 'toggleTheme': toggleTheme(); break;
             case 'addRow':
                 state.items.push(getInitialState().items[0]);
@@ -1141,6 +1573,12 @@ document.addEventListener('DOMContentLoaded', () => {
             state.logoDataUrl = savedLogo;
         }
         render(); // Initial render
+
+        // Initialize Google Auth after a short delay to ensure scripts are loaded
+        setTimeout(() => {
+            initGoogleAuth();
+        }, 500);
+
         showNotification('Welcome to the OAK Invoicing tool!', 'info');
     }
 
