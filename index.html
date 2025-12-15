@@ -657,8 +657,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             gapi.load('client', async () => {
                 try {
+                    // Initialize without API key - OAuth token is sufficient
                     await gapi.client.init({
-                        apiKey: GOOGLE_CONFIG.API_KEY,
                         discoveryDocs: GOOGLE_CONFIG.DISCOVERY_DOCS
                     });
 
