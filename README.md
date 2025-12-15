@@ -13,9 +13,15 @@ A professional invoicing application with **Google Sign-In** and **cloud synchro
 - ✅ **Auto-Load** - Latest invoice automatically loads when you sign in
 - ✅ **Session Persistence** - Stay signed in during your browser session
 
+### Professional Features
+- ✅ **Invoice Templates** - Pre-configured templates for different project types
+- ✅ **Company Settings** - Fully configurable company information
+- ✅ **Email Integration** - One-click email invoice with pre-filled details
+- ✅ **Enhanced Validation** - Length limits and boundary checking on all inputs
+
 ### Security & Bug Fixes
 - ✅ **XSS Protection** - HTML escaping to prevent script injection
-- ✅ **Input Validation** - Prevents negative values in calculations
+- ✅ **Input Validation** - Prevents negative values and enforces limits
 - ✅ **Fixed Attachments** - File attachment feature now works correctly
 - ✅ **Improved Error Handling** - Better error messages and recovery
 
@@ -25,6 +31,11 @@ A professional invoicing application with **Google Sign-In** and **cloud synchro
 
 ### Invoice Management
 - Create **Invoices** and **Estimates**
+- **Invoice Templates** - Quick start with pre-configured settings
+  - Standard Invoice
+  - Construction Project (with bond/overhead/profit)
+  - Quick Estimate
+  - Maintenance Service
 - Invoice numbering and status tracking
 - Multiple line items with quantities and rates
 - **Sub-items support** for detailed breakdowns
@@ -33,20 +44,34 @@ A professional invoicing application with **Google Sign-In** and **cloud synchro
 - Tax calculation
 - Balance due calculation
 
+### Business Tools
+- **Company Settings Panel** - Configure your business information
+  - Company name, address, contact details
+  - Payment methods (Zelle, Venmo)
+  - Custom payment terms
+  - Default invoice notes
+- **Email Integration** - Send invoices directly from the app
+  - Auto-extracts client email from Bill To field
+  - Pre-fills email with invoice details
+  - Includes payment information
+- **Configurable Everything** - All company info stored and customizable
+
 ### Storage & Sync
 - **Google Drive Integration** - Cloud storage for multi-device access
 - **Excel Export/Import** - Download invoices as .xlsx files
 - Multi-sheet workbook structure
 - File attachments (stored in Excel)
 - Automatic backup to Google Drive
+- Settings persist in localStorage
 
 ### UI/UX
 - **Dark/Light Mode** - Toggle theme with persistence
 - **Responsive Design** - Works on mobile, tablet, and desktop
-- **Print to PDF** - Professional PDF generation
+- **Print to PDF** - Professional PDF generation with company info
 - PDF stamps (Paid, Overdue, Void, Draft, Confidential)
 - Real-time calculations
 - Toast notifications
+- Settings modal for easy configuration
 
 ---
 
@@ -103,6 +128,12 @@ To enable Google Sign-In and cloud synchronization, you need to:
 
 ### Creating an Invoice
 
+**Quick Start with Templates:**
+1. Select a template from the dropdown (Standard, Construction, Estimate, Maintenance)
+2. Template auto-fills appropriate settings
+3. Add client details and line items
+
+**Manual Creation:**
 1. Select **Invoice** or **Estimate**
 2. Enter invoice number and client details
 3. Add line items (click "+ Add Item")
@@ -110,6 +141,17 @@ To enable Google Sign-In and cloud synchronization, you need to:
 5. Add adjustments (Bond, Overhead, Profit) if needed
 6. Set tax percentage
 7. Click **Save to Drive** (if signed in) or **Save Local Excel**
+
+**Sending Invoices:**
+1. Create and save your invoice
+2. Click **Print / PDF** to generate PDF
+3. Click **Email Invoice** to draft email with invoice details
+4. Attach the PDF and send!
+
+**Company Settings:**
+- Click the gear icon ⚙️ in the toolbar
+- Update your company information
+- Changes apply to all invoices and PDFs
 
 ### Multi-Device Workflow
 
@@ -167,12 +209,16 @@ Invoices are stored in multi-sheet Excel workbooks with the following structure:
 
 ## 💡 Tips
 
+- **Templates**: Use templates for faster invoice creation
+- **Company Settings**: Configure once, applies to all invoices and PDFs
+- **Email**: Add client email to "Bill To" field for auto-detection
 - **Auto-sync**: Changes are automatically saved when you click "Save to Drive"
 - **Offline work**: You can still use local Excel files without signing in
 - **Multiple records**: One Excel file can contain multiple invoices
 - **Print to PDF**: Use your browser's print function (Ctrl+P / Cmd+P)
 - **Dark mode**: Toggle theme with the moon/sun icon
 - **Attachments**: Upload files that will be embedded in the Excel file
+- **Validation**: All inputs have length limits and validation to prevent errors
 
 ---
 
@@ -187,13 +233,13 @@ Invoices are stored in multi-sheet Excel workbooks with the following structure:
 ## 🚀 Future Enhancements
 
 - [ ] Automatic backup intervals
-- [ ] Invoice templates
-- [ ] Email integration
 - [ ] Multi-currency support
 - [ ] Recurring invoices
 - [ ] Analytics dashboard
-- [ ] Client management
-- [ ] Configurable company information
+- [ ] Client management database
+- [ ] Custom email templates
+- [ ] Batch invoice processing
+- [ ] Advanced reporting
 
 ---
 
@@ -215,7 +261,33 @@ For issues or questions:
 
 ## 🎉 Changelog
 
-### Latest Update (2025-12-12)
+### Update 2 (2025-12-14) - Professional Features
+
+**Added:**
+- 📋 **Invoice Templates** - 4 pre-configured templates (Standard, Construction, Quick Estimate, Maintenance)
+- ⚙️ **Company Settings** - Full configuration panel for business information
+- 📧 **Email Integration** - One-click email with pre-filled invoice details
+- ✅ **Enhanced Validation** - Length limits and boundary checking on all fields
+  - Descriptions limited to 500 characters
+  - Sub-item descriptions limited to 200 characters
+  - Percentages capped at 0-100%
+  - Invoice numbers limited to 50 characters
+  - Notes limited to 1000 characters
+
+**Improved:**
+- Company info now configurable and stored in localStorage
+- Print PDFs now use custom company information
+- Email feature auto-extracts client email from Bill To field
+- Settings persist across sessions
+
+**Features Completed:**
+- ✅ Invoice templates ~~(was Future Enhancement)~~
+- ✅ Email integration ~~(was Future Enhancement)~~
+- ✅ Configurable company information ~~(was Future Enhancement)~~
+
+---
+
+### Update 1 (2025-12-12) - Google Sign-In & Cloud Sync
 
 **Added:**
 - Google Sign-In authentication
