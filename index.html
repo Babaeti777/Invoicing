@@ -964,8 +964,30 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSyncStatus('syncing', 'Saving...');
             console.log('Generating workbook...');
 
+            // Clear lastWorkbook to avoid issues with old format data
+            lastWorkbook = null;
+
             const wb = generateWorkbook();
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+            let wbout;
+            try {
+                wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            } catch (xlsxError) {
+                console.error('XLSX write error:', xlsxError);
+                // If still failing, try without attachments
+                if (xlsxError.message && xlsxError.message.includes('32767')) {
+                    showNotification('Attachment too large. Saving without attachments...', 'warn');
+                    // Remove attachments and try again
+                    const ws = wb.Sheets['Attachments'];
+                    if (ws) {
+                        wb.Sheets['Attachments'] = XLSX.utils.json_to_sheet([]);
+                    }
+                    wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                } else {
+                    throw xlsxError;
+                }
+            }
+
             const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             console.log('Workbook generated, size:', blob.size, 'bytes');
 
