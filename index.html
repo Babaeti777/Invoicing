@@ -50,13 +50,13 @@
         -moz-osx-font-smoothing: grayscale;
     }
     #print-stamp { display: none; }
-    /* Print-specific styles */
+    /* Print-specific styles - Ultra Compact */
     @media print {
       body {
         background-color: white !important;
-        font-size: 8.5pt;
+        font-size: 8pt;
         margin: 0;
-        padding: 0.25in;
+        padding: 0.15in 0.25in;
       }
       .no-print { display: none !important; }
       .print-only-flex { display: flex !important; }
@@ -75,7 +75,8 @@
         appearance: none;
         padding: 0 !important;
         color: black !important;
-        font-size: 8.5pt;
+        font-size: 8pt;
+        line-height: 1.2;
       }
       textarea {
         resize: none !important;
@@ -92,16 +93,16 @@
       #print-stamp {
         display: block;
         position: absolute;
-        top: 50%;
+        top: 40%;
         left: 50%;
         transform: translate(-50%, -50%) rotate(-15deg);
-        border: 8px solid;
-        padding: 1.5rem 3rem;
+        border: 6px solid;
+        padding: 1rem 2rem;
         border-radius: 0.5rem;
-        font-size: 6rem;
+        font-size: 4rem;
         font-weight: 800;
-        letter-spacing: 0.2em;
-        opacity: 0.15;
+        letter-spacing: 0.15em;
+        opacity: 0.12;
         user-select: none;
         z-index: 10;
       }
@@ -109,32 +110,33 @@
       tr, .totals-section > div {
         page-break-inside: avoid;
       }
-      /* Compact table spacing */
+      /* Ultra compact table spacing */
       table th, table td {
-        padding: 0.15rem 0.3rem !important;
-        font-size: 8.5pt;
-        line-height: 1.2;
+        padding: 0.1rem 0.2rem !important;
+        font-size: 7.5pt;
+        line-height: 1.15;
       }
       table thead th {
-        font-size: 7.5pt;
-        padding: 0.2rem 0.3rem !important;
+        font-size: 7pt;
+        padding: 0.1rem 0.2rem !important;
+        text-transform: uppercase;
       }
-      /* Reduce ALL spacing */
+      /* Minimize ALL spacing */
       section {
-        margin-top: 0.25rem !important;
-        margin-bottom: 0.25rem !important;
+        margin-top: 0.15rem !important;
+        margin-bottom: 0.15rem !important;
       }
       h1 {
-        font-size: 14pt !important;
-        margin: 0.2rem 0 !important;
+        font-size: 12pt !important;
+        margin: 0.1rem 0 !important;
       }
       h2 {
-        font-size: 11pt !important;
-        margin: 0.2rem 0 !important;
+        font-size: 10pt !important;
+        margin: 0.1rem 0 !important;
       }
       h3 {
-        font-size: 9pt !important;
-        margin: 0.2rem 0 !important;
+        font-size: 8pt !important;
+        margin: 0.1rem 0 !important;
         font-weight: 600;
       }
       /* Force attachments to be visible */
@@ -144,23 +146,57 @@
         opacity: 1 !important;
       }
       #attachments > div {
-        display: flex !important;
-        margin-bottom: 0.1rem !important;
+        display: inline-flex !important;
+        margin-right: 0.5rem !important;
+        margin-bottom: 0 !important;
         padding: 0 !important;
         background: transparent !important;
+        font-size: 7pt;
       }
       /* Compact logo and header */
       #print-logo {
-        max-height: 40px !important;
-        max-width: 40px !important;
+        max-height: 32px !important;
+        max-width: 32px !important;
       }
-      /* Grid layout fixes */
-      .grid {
-        display: block !important;
+      /* Print header compact layout */
+      .print-header-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+      /* Grid layout - side by side for print */
+      .lg\:grid-cols-2 {
+        display: flex !important;
+        gap: 1rem !important;
       }
       .lg\:grid-cols-2 > * {
-        width: 100% !important;
-        margin-bottom: 0.5rem !important;
+        flex: 1 !important;
+        margin-bottom: 0 !important;
+      }
+      /* Bill to and details inline */
+      #billTo {
+        font-size: 7.5pt !important;
+        line-height: 1.2 !important;
+        min-height: 50px !important;
+      }
+      /* Notes section compact */
+      #notes {
+        font-size: 7.5pt !important;
+        line-height: 1.2 !important;
+        min-height: 30px !important;
+      }
+      /* Totals section compact */
+      .totals-section {
+        font-size: 8pt !important;
+      }
+      .totals-section > div {
+        padding: 0.1rem 0 !important;
+      }
+      /* Footer compact */
+      .print-footer {
+        margin-top: 0.5rem !important;
+        padding-top: 0.25rem !important;
+        font-size: 7pt !important;
       }
     }
     /* Custom scrollbar */
@@ -241,18 +277,24 @@
       
       <div class="p-6 md:p-8 print-p-0">
         
-        <!-- START: Print-Only Header -->
-        <div class="hidden print-only-flex mb-2 justify-between items-center border-b border-gray-400 pb-1" style="font-size: 8pt;">
-            <div class="flex items-center gap-2">
-                <img id="print-logo" src="" alt="Logo" class="w-10 h-10 object-contain">
-                <div style="line-height: 1.2;">
-                    <p class="font-bold text-gray-900" style="font-size: 10pt; margin: 0;" id="print-company-name">OAK Builders LLC</p>
-                    <p class="text-gray-700" style="font-size: 7.5pt; margin: 0;"><span id="print-company-phone">(202) 888-9895</span> • <span id="print-company-email">info@oakllc.co</span></p>
+        <!-- START: Print-Only Header - Ultra Compact -->
+        <div class="hidden print-only-flex mb-1 items-center border-b border-gray-300 pb-1" style="font-size: 7pt; justify-content: space-between;">
+            <div class="flex items-center gap-1">
+                <img id="print-logo" src="" alt="Logo" class="object-contain" style="width: 28px; height: 28px;">
+                <div style="line-height: 1.1;">
+                    <p class="font-bold text-gray-900" style="font-size: 9pt; margin: 0;" id="print-company-name">OAK Builders LLC</p>
+                    <p class="text-gray-600" style="font-size: 6.5pt; margin: 0;"><span id="print-company-phone">(202) 888-9895</span> • <span id="print-company-email">info@oakllc.co</span></p>
                 </div>
             </div>
-            <div class="text-right" style="font-size: 7.5pt; line-height: 1.2;">
-                <p style="margin: 0;" id="print-company-address">123 Construction Way</p>
-                <p style="margin: 0;"><span id="print-company-city">Fairfax, VA 22030</span> • <span id="print-company-website">www.oakllc.co</span></p>
+            <div class="flex items-center gap-3">
+                <div class="text-right" style="font-size: 6.5pt; line-height: 1.1;">
+                    <p style="margin: 0;" id="print-company-address">123 Construction Way</p>
+                    <p style="margin: 0;"><span id="print-company-city">Fairfax, VA 22030</span> • <span id="print-company-website">www.oakllc.co</span></p>
+                </div>
+                <div class="text-right" style="border-left: 1px solid #ccc; padding-left: 8px;">
+                    <p class="font-bold text-gray-800" style="font-size: 11pt; margin: 0;" id="print-doc-title">INVOICE</p>
+                    <p class="text-gray-600" style="font-size: 7pt; margin: 0;">#<span id="print-doc-number"></span></p>
+                </div>
             </div>
         </div>
         <!-- END: Print-Only Header -->
@@ -328,6 +370,13 @@
                     <option value="maintenance">Maintenance Service</option>
                   </select>
                 </div>
+
+                <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
+
+                <button data-action="openRepository" class="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 rounded-lg transition-all">
+                  <svg class="inline w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                  Repository
+                </button>
 
                 <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
 
@@ -419,6 +468,83 @@
             <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
               <button data-action="closeSettings" class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">Cancel</button>
               <button data-action="saveSettings" class="px-4 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-light rounded-lg transition-colors">Save Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Repository Modal -->
+        <div id="repository-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 no-print">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Invoice & Estimate Repository</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Browse and manage all your documents</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button data-action="refreshRepository" class="px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                  <svg class="inline w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  Refresh
+                </button>
+                <button data-action="closeRepository" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <!-- Filters -->
+            <div class="px-4 py-3 bg-slate-50 dark:bg-slate-700/30 border-b border-slate-200 dark:border-slate-700 flex flex-wrap gap-3 items-center">
+              <select id="repo-filter-type" class="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm px-3 py-1.5">
+                <option value="">All Types</option>
+                <option value="Invoice">Invoices</option>
+                <option value="Estimate">Estimates</option>
+              </select>
+              <select id="repo-filter-status" class="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm px-3 py-1.5">
+                <option value="">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Approved">Approved</option>
+                <option value="Paid">Paid</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              <input id="repo-search" type="text" placeholder="Search by number or client..." class="flex-1 min-w-[200px] bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg text-sm px-3 py-1.5">
+              <div id="repo-stats" class="text-sm text-slate-500 dark:text-slate-400 ml-auto"></div>
+            </div>
+            <!-- Repository Table -->
+            <div class="flex-1 overflow-y-auto p-4">
+              <div id="repository-loading" class="hidden flex items-center justify-center py-12">
+                <svg class="animate-spin h-8 w-8 text-accent" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="ml-3 text-slate-500">Loading repository...</span>
+              </div>
+              <div id="repository-empty" class="hidden text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <p class="text-slate-500 dark:text-slate-400">No documents found</p>
+                <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">Create a new invoice or estimate to get started</p>
+              </div>
+              <table id="repository-table" class="hidden w-full">
+                <thead class="bg-slate-100 dark:bg-slate-700/50 text-xs uppercase text-slate-500 dark:text-slate-400 sticky top-0">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold">Type</th>
+                    <th class="px-3 py-2 text-left font-semibold">Number</th>
+                    <th class="px-3 py-2 text-left font-semibold">Client</th>
+                    <th class="px-3 py-2 text-left font-semibold">Date</th>
+                    <th class="px-3 py-2 text-right font-semibold">Total</th>
+                    <th class="px-3 py-2 text-center font-semibold">Status</th>
+                    <th class="px-3 py-2 text-center font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="repository-body" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
+              </table>
+            </div>
+            <!-- Summary Footer -->
+            <div id="repository-summary" class="px-4 py-3 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm">
+              <div class="flex gap-6">
+                <span class="text-slate-500 dark:text-slate-400">Total Invoiced: <strong id="repo-total-invoiced" class="text-slate-700 dark:text-slate-200">$0.00</strong></span>
+                <span class="text-slate-500 dark:text-slate-400">Total Paid: <strong id="repo-total-paid" class="text-green-600 dark:text-green-400">$0.00</strong></span>
+                <span class="text-slate-500 dark:text-slate-400">Outstanding: <strong id="repo-total-outstanding" class="text-accent">$0.00</strong></span>
+              </div>
+              <button data-action="newDocument" class="px-4 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-light rounded-lg transition-colors">+ New Document</button>
             </div>
           </div>
         </div>
@@ -562,20 +688,20 @@
 
         </main>
         
-        <!-- START: Print-Only Footer -->
-        <div class="hidden print-only-block mt-24 pt-8 border-t border-gray-300 text-xs text-gray-600">
-            <div class="grid grid-cols-3 gap-8">
-                <div class="col-span-2">
-                    <h4 class="font-semibold text-gray-700 mb-1">Payment Terms</h4>
-                    <p id="paymentTerms">Payment is due upon receipt. Late payments are subject to a service charge of 1.5% per month on all outstanding balances.</p>
+        <!-- START: Print-Only Footer - Compact -->
+        <div class="hidden print-only-block mt-4 pt-2 border-t border-gray-200 print-footer" style="font-size: 6.5pt; color: #555;">
+            <div style="display: flex; justify-content: space-between; gap: 1rem;">
+                <div style="flex: 2;">
+                    <strong style="font-size: 7pt;">Payment Terms:</strong>
+                    <span id="paymentTerms">Payment is due upon receipt. Late payments are subject to a service charge of 1.5% per month.</span>
                 </div>
-                <div>
-                    <h4 class="font-semibold text-gray-700 mb-1">Payment Methods</h4>
-                    <p id="print-payment-zelle">Zelle: payments@oakllc.co</p>
-                    <p id="print-payment-venmo">Venmo: @oak-builders</p>
+                <div style="flex: 1; text-align: right;">
+                    <strong style="font-size: 7pt;">Payment Methods:</strong>
+                    <span id="print-payment-zelle">Zelle: payments@oakllc.co</span> |
+                    <span id="print-payment-venmo">Venmo: @oak-builders</span>
                 </div>
             </div>
-            <p class="text-center mt-12">Thank you for your business!</p>
+            <p class="text-center" style="margin-top: 0.5rem; font-size: 7pt; color: #666;">Thank you for your business!</p>
         </div>
         <!-- END: Print-Only Footer -->
       </div>
@@ -1131,7 +1257,8 @@ document.addEventListener('DOMContentLoaded', () => {
             taxPct: 0,
             attachments: [], // {filename, mime, base64, size}
             logoDataUrl: null,
-            stampType: 'None'
+            stampType: 'None',
+            templateKey: '' // Track selected template
         };
     }
 
@@ -1143,6 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         console.log('Applying template:', template.name);
+        state.templateKey = templateKey; // Store selected template
         state.notes = template.notes;
         state.dueInDays = template.dueInDays;
         state.taxPct = template.taxPct;
@@ -1219,6 +1347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#notes').value = state.notes;
         $('#taxRate').value = state.taxPct;
         $('#stampType').value = state.stampType;
+        $('#templateSelect').value = state.templateKey || ''; // Show selected template
 
         const isInv = state.type === 'Invoice';
         $('#dueWrap').classList.toggle('hidden', !isInv);
@@ -1371,10 +1500,14 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#printTaxRate').textContent = `${state.taxPct}%`;
         $('#printDueWrap').classList.toggle('hidden', state.type !== 'Invoice');
 
+        // Update compact header
+        $('#print-doc-title').textContent = state.type.toUpperCase();
+        $('#print-doc-number').textContent = state.number || 'DRAFT';
+
         const dueDays = toNum(state.dueInDays);
         const term = dueDays > 0 ? `Payment is due within ${dueDays} days.` : 'Payment is due upon receipt.';
         $('#paymentTerms').textContent = `${term} Late payments are subject to a service charge of 1.5% per month on all outstanding balances.`;
-        
+
         const stampEl = $('#print-stamp');
         if (state.stampType !== 'None') {
             stampEl.textContent = state.stampType.toUpperCase();
@@ -1465,6 +1598,183 @@ document.addEventListener('DOMContentLoaded', () => {
         closeSettingsModal();
     }
 
+    // ---------- Repository ----------
+    let repositoryData = [];
+    let repositoryWorkbooks = {};
+
+    function openRepositoryModal() {
+        if (!googleAuth.isSignedIn) {
+            showNotification('Please sign in to access the repository', 'warn');
+            return;
+        }
+        $('#repository-modal').classList.remove('hidden');
+        loadRepository();
+    }
+
+    function closeRepositoryModal() {
+        $('#repository-modal').classList.add('hidden');
+    }
+
+    async function loadRepository() {
+        if (!googleAuth.isSignedIn || !googleAuth.folderId) {
+            showNotification('Please sign in first', 'warn');
+            return;
+        }
+
+        // Show loading state
+        $('#repository-loading').classList.remove('hidden');
+        $('#repository-empty').classList.add('hidden');
+        $('#repository-table').classList.add('hidden');
+
+        try {
+            const response = await gapi.client.drive.files.list({
+                q: `'${googleAuth.folderId}' in parents and trashed=false and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`,
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc',
+                pageSize: 100
+            });
+
+            const files = response.result.files || [];
+            repositoryData = [];
+            repositoryWorkbooks = {};
+
+            // Load each file and extract records
+            for (const file of files) {
+                try {
+                    const arrayBuffer = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                        headers: { 'Authorization': `Bearer ${googleAuth.accessToken}` }
+                    }).then(r => r.arrayBuffer());
+
+                    const wb = XLSX.read(arrayBuffer, { type: 'array' });
+                    const records = sheetToJSON(wb, 'Records');
+
+                    records.forEach(rec => {
+                        repositoryData.push({
+                            ...rec,
+                            _fileId: file.id,
+                            _fileName: file.name,
+                            _modifiedTime: file.modifiedTime
+                        });
+                        repositoryWorkbooks[rec.id] = { wb, fileId: file.id };
+                    });
+                } catch (e) {
+                    console.warn('Error reading file:', file.name, e);
+                }
+            }
+
+            renderRepository();
+        } catch (error) {
+            console.error('Error loading repository:', error);
+            showNotification('Error loading repository', 'error');
+        } finally {
+            $('#repository-loading').classList.add('hidden');
+        }
+    }
+
+    function renderRepository() {
+        const filterType = $('#repo-filter-type').value;
+        const filterStatus = $('#repo-filter-status').value;
+        const searchTerm = $('#repo-search').value.toLowerCase();
+
+        // Filter data
+        let filtered = repositoryData.filter(rec => {
+            if (filterType && rec.type !== filterType) return false;
+            if (filterStatus && rec.status !== filterStatus) return false;
+            if (searchTerm) {
+                const searchFields = `${rec.number} ${rec.client_name} ${rec.client_company}`.toLowerCase();
+                if (!searchFields.includes(searchTerm)) return false;
+            }
+            return true;
+        });
+
+        // Sort by date descending
+        filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+        const tbody = $('#repository-body');
+
+        if (filtered.length === 0) {
+            $('#repository-empty').classList.remove('hidden');
+            $('#repository-table').classList.add('hidden');
+            $('#repo-stats').textContent = '';
+            return;
+        }
+
+        $('#repository-empty').classList.add('hidden');
+        $('#repository-table').classList.remove('hidden');
+
+        // Calculate totals
+        let totalInvoiced = 0;
+        let totalPaid = 0;
+        filtered.forEach(rec => {
+            if (rec.type === 'Invoice') {
+                totalInvoiced += toNum(rec.total);
+                totalPaid += toNum(rec.paid);
+            }
+        });
+
+        $('#repo-total-invoiced').textContent = fmt(totalInvoiced);
+        $('#repo-total-paid').textContent = fmt(totalPaid);
+        $('#repo-total-outstanding').textContent = fmt(totalInvoiced - totalPaid);
+        $('#repo-stats').textContent = `${filtered.length} document${filtered.length !== 1 ? 's' : ''}`;
+
+        // Status badge colors
+        const statusColors = {
+            'Draft': 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+            'Sent': 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+            'Approved': 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
+            'Paid': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+            'Rejected': 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+        };
+
+        tbody.innerHTML = filtered.map(rec => `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <td class="px-3 py-2">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${rec.type === 'Invoice' ? 'bg-accent/10 text-accent-dark' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'}">
+                        ${escapeHtml(rec.type)}
+                    </span>
+                </td>
+                <td class="px-3 py-2 font-medium text-slate-700 dark:text-slate-200">#${escapeHtml(rec.number || 'N/A')}</td>
+                <td class="px-3 py-2">
+                    <div class="text-sm text-slate-700 dark:text-slate-200">${escapeHtml(rec.client_name || 'Unknown')}</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400">${escapeHtml(rec.client_company || '')}</div>
+                </td>
+                <td class="px-3 py-2 text-sm text-slate-600 dark:text-slate-300">${rec.date || 'N/A'}</td>
+                <td class="px-3 py-2 text-right font-medium text-slate-700 dark:text-slate-200">${fmt(rec.total)}</td>
+                <td class="px-3 py-2 text-center">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[rec.status] || statusColors['Draft']}">
+                        ${escapeHtml(rec.status || 'Draft')}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <button class="text-accent hover:text-accent-dark dark:hover:text-accent-light text-sm font-medium" data-action="loadFromRepo" data-rec-id="${escapeHtml(rec.id)}">
+                        Open
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function loadFromRepository(recId) {
+        const entry = repositoryWorkbooks[recId];
+        if (!entry) {
+            showNotification('Record not found in repository', 'error');
+            return;
+        }
+        loadRecordFromWorkbook(entry.wb, recId);
+        closeRepositoryModal();
+        showNotification(`Loaded: ${recId}`, 'success');
+    }
+
+    function createNewDocument() {
+        if (state.id && !confirm('Create a new document? Unsaved changes will be lost.')) {
+            return;
+        }
+        setStateAndRender(getInitialState());
+        closeRepositoryModal();
+        showNotification('New document created', 'success');
+    }
+
     // ---------- Email Invoice ----------
     function emailInvoice() {
         // Validate that we have essential info
@@ -1498,9 +1808,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Attachments in state:', state.attachments.length);
         console.log('Attachment details:', state.attachments.map(a => ({ name: a.filename, size: a.size })));
 
-        const attachmentNote = attachmentCount > 0
-            ? `\n\nNote: This ${docType.toLowerCase()} includes ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}: ${state.attachments.map(a => a.filename).join(', ')}`
-            : '';
+        // Build attachment list for email body
+        let attachmentSection = '';
+        if (attachmentCount > 0) {
+            attachmentSection = `
+
+ATTACHMENTS INCLUDED (${attachmentCount} file${attachmentCount > 1 ? 's' : ''}):
+${state.attachments.map((a, i) => `  ${i+1}. ${a.filename} (${Math.round(a.size/1024)} KB)`).join('\n')}
+
+*** IMPORTANT: Please download and attach the above files from the invoice app ***`;
+        }
 
         const subject = encodeURIComponent(`${docType} #${docNumber} from ${companySettings.name}`);
         const body = encodeURIComponent(`Dear Client,
@@ -1510,9 +1827,8 @@ Please find attached ${docType} #${docNumber}.
 ${docType} Details:
 - ${docType} Number: ${docNumber}
 - Date: ${state.date}
-${state.type === 'Invoice' ? `- Due Date: ${isoAddDays(state.date, state.dueInDays)}\n` : ''}
-- Total Amount: ${fmt(total)}
-${attachmentNote}
+${state.type === 'Invoice' ? `- Due Date: ${isoAddDays(state.date, state.dueInDays)}\n` : ''}- Total Amount: ${fmt(total)}
+${attachmentSection}
 
 ${state.notes}
 
@@ -1533,22 +1849,48 @@ ${companySettings.phone}
         const mailtoLink = `mailto:${toEmail}?subject=${subject}&body=${body}`;
         window.location.href = mailtoLink;
 
-        let instructions = `📧 Email opened! ${attachmentCount > 0 ? `${attachmentCount} ATTACHMENT${attachmentCount > 1 ? 'S' : ''} LISTED BELOW! ` : ''}Steps: (1) Print to PDF, (2) Attach PDF to email`;
+        // If there are attachments, trigger downloads
         if (attachmentCount > 0) {
-            instructions += `, (3) ATTACH ${attachmentCount} FILE${attachmentCount > 1 ? 'S' : ''}: ${state.attachments.map(a => a.filename).join(', ')}`;
+            showNotification(`📧 Email opened! Downloading ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}...`, 'success');
+            // Download each attachment with a small delay
+            state.attachments.forEach((att, idx) => {
+                setTimeout(() => downloadAttachment(att), idx * 500);
+            });
+        } else {
+            showNotification(`📧 Email opened! Print to PDF and attach to email.`, 'success');
         }
 
-        showNotification(instructions, 'success');
-
-        // Also log detailed instructions to console
+        // Log detailed instructions to console
         console.log(`
 📧 EMAIL INSTRUCTIONS:
 ══════════════════════════════════════
 1. Print this page to PDF (Ctrl+P or Cmd+P)
 2. Attach the PDF to the email that just opened
-${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.attachments.map(a => `   ✓ ${a.filename} (${Math.round(a.size/1024)} KB)`).join('\n')}` : ''}
+${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S) (auto-downloaded):\n${state.attachments.map(a => `   ✓ ${a.filename} (${Math.round(a.size/1024)} KB)`).join('\n')}` : ''}
 ══════════════════════════════════════
         `);
+    }
+
+    function downloadAttachment(attachment) {
+        try {
+            const byteCharacters = atob(attachment.base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: attachment.mime });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = attachment.filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading attachment:', attachment.filename, error);
+        }
     }
 
     function calculateTotal() {
@@ -1582,7 +1924,8 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.at
         $('#templateSelect').addEventListener('change', (e) => {
             if (e.target.value) {
                 applyTemplate(e.target.value);
-                e.target.value = ''; // Reset to "None"
+            } else {
+                state.templateKey = ''; // Clear template when "None" selected
             }
         });
 
@@ -1592,6 +1935,18 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.at
                 closeSettingsModal();
             }
         });
+
+        // Repository modal
+        $('#repository-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'repository-modal') {
+                closeRepositoryModal();
+            }
+        });
+
+        // Repository filters
+        $('#repo-filter-type').addEventListener('change', renderRepository);
+        $('#repo-filter-status').addEventListener('change', renderRepository);
+        $('#repo-search').addEventListener('input', renderRepository);
     }
     
     function handleLiveUpdate(e) {
@@ -1679,6 +2034,14 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.at
             case 'openSettings': openSettingsModal(); break;
             case 'closeSettings': closeSettingsModal(); break;
             case 'saveSettings': saveSettingsFromModal(); break;
+            case 'openRepository': openRepositoryModal(); break;
+            case 'closeRepository': closeRepositoryModal(); break;
+            case 'refreshRepository': loadRepository(); break;
+            case 'newDocument': createNewDocument(); break;
+            case 'loadFromRepo':
+                const recId = target.dataset.recId;
+                if (recId) loadFromRepository(recId);
+                break;
             case 'emailInvoice': emailInvoice(); break;
             case 'toggleTheme': toggleTheme(); break;
             case 'addRow':
@@ -1885,10 +2248,31 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.at
         }));
 
         const otherAT = existingAT.filter(r => String(r.record_id).trim() !== stateId);
-        const newAT = state.attachments.map(a => ({
-            record_id: state.id, filename: a.filename, mime_type: a.mime,
-            base64: a.base64, size_bytes: a.size || (a.base64 ? Math.floor(a.base64.length * 3 / 4) : 0)
-        }));
+        // Split base64 into chunks to avoid Excel 32767 character limit
+        const MAX_CELL_LENGTH = 30000;
+        const newAT = state.attachments.map(a => {
+            const base64 = a.base64 || '';
+            const chunks = [];
+            for (let i = 0; i < base64.length; i += MAX_CELL_LENGTH) {
+                chunks.push(base64.substring(i, i + MAX_CELL_LENGTH));
+            }
+            const row = {
+                record_id: state.id,
+                filename: a.filename,
+                mime_type: a.mime,
+                size_bytes: a.size || (base64 ? Math.floor(base64.length * 3 / 4) : 0),
+                chunk_count: chunks.length || 1
+            };
+            // Store each chunk in separate columns (base64_1, base64_2, etc.)
+            chunks.forEach((chunk, idx) => {
+                row[`base64_${idx + 1}`] = chunk;
+            });
+            // If no chunks, add empty base64_1
+            if (chunks.length === 0) {
+                row.base64_1 = '';
+            }
+            return row;
+        });
 
         writeSheet(wb, 'Records', newRecs);
         writeSheet(wb, 'LineItems', [...otherLI, ...newLI]);
@@ -1949,9 +2333,24 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.at
             return normalizeItem({ desc: L.description, qty: L.qty, rate: L.rate, usesSub: L.uses_subitems, subs });
         });
 
-        newState.attachments = attachments.filter(a => String(a.record_id).trim() === recId).map(a => ({
-            filename: a.filename, mime: a.mime_type, base64: a.base64, size: a.size_bytes
-        }));
+        newState.attachments = attachments.filter(a => String(a.record_id).trim() === recId).map(a => {
+            // Reassemble base64 from chunks
+            let base64 = '';
+            const chunkCount = parseInt(a.chunk_count) || 1;
+            for (let i = 1; i <= chunkCount; i++) {
+                base64 += a[`base64_${i}`] || '';
+            }
+            // Fallback to old format if no chunks
+            if (!base64 && a.base64) {
+                base64 = a.base64;
+            }
+            return {
+                filename: a.filename,
+                mime: a.mime_type,
+                base64: base64,
+                size: a.size_bytes
+            };
+        });
         
         setStateAndRender(newState);
         showNotification(`Loaded record ${recId}`, 'success');
