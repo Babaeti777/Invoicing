@@ -753,8 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const GOOGLE_CONFIG = {
         // IMPORTANT: Replace with your actual Google OAuth Client ID
         // Get one at: https://console.cloud.google.com/apis/credentials
-        CLIENT_ID: 102862528480-0f2q6s4ojar6dp44omcp39par8sutb5g.apps.googleusercontent.com,
-        API_KEY: AIzaSyA-CB_dfOxsp_JTkMgBVyS8jn5HSBFLLas,
+        CLIENT_ID: '102862528480-0f2q6s4ojar6dp44omcp39par8sutb5g.apps.googleusercontent.com',
+        API_KEY: 'AIzaSyA-CB_dfOxsp_JTkMgBVyS8jn5HSBFLLas',
         DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
         SCOPES: 'https://www.googleapis.com/auth/drive.file',
         FOLDER_NAME: 'OAK_Invoicing_Data'
@@ -2247,9 +2247,37 @@ ${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S) (auto-downlo
             record_id: state.id, date: p.date, amount: round2(p.amount), method: p.method
         }));
 
-        const otherAT = existingAT.filter(r => String(r.record_id).trim() !== stateId);
-        // Split base64 into chunks to avoid Excel 32767 character limit
+        // Define max cell length for Excel compatibility (32767 char limit)
         const MAX_CELL_LENGTH = 30000;
+
+        const otherAT = existingAT.filter(r => String(r.record_id).trim() !== stateId).map(oldAtt => {
+            // Re-chunk old attachments that might have the old format
+            if (oldAtt.base64 && oldAtt.base64.length > MAX_CELL_LENGTH) {
+                const base64 = oldAtt.base64;
+                const chunks = [];
+                for (let i = 0; i < base64.length; i += MAX_CELL_LENGTH) {
+                    chunks.push(base64.substring(i, i + MAX_CELL_LENGTH));
+                }
+                const row = {
+                    record_id: oldAtt.record_id,
+                    filename: oldAtt.filename,
+                    mime_type: oldAtt.mime_type,
+                    size_bytes: oldAtt.size_bytes,
+                    chunk_count: chunks.length || 1
+                };
+                chunks.forEach((chunk, idx) => {
+                    row[`base64_${idx + 1}`] = chunk;
+                });
+                return row;
+            }
+            // Remove old base64 field if chunks exist
+            if (oldAtt.chunk_count && oldAtt.chunk_count > 0) {
+                const { base64, ...rest } = oldAtt;
+                return rest;
+            }
+            return oldAtt;
+        });
+        // Split base64 into chunks to avoid Excel 32767 character limit
         const newAT = state.attachments.map(a => {
             const base64 = a.base64 || '';
             const chunks = [];
