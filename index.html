@@ -407,7 +407,7 @@
                         <button data-action="togglePayments" class="no-print text-xs font-semibold text-accent dark:text-accent-light">Track Payments</button>
                       </div>
                       <input id="paid" type="text" value="$0.00" class="mt-1 block w-full bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm" readonly />
-                      <div id="paymentTracker" class="hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"></div>
+                      <div id="paymentTracker" class="no-print hidden mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"></div>
                     </div>
                 </div>
                  <div class="no-print">
@@ -652,6 +652,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 initGapi().then(() => {
                     showAuthenticatedUI();
                     showNotification('Signed in successfully!', 'success');
+                }).catch((error) => {
+                    console.error('Error initializing GAPI:', error);
+                    signOut();
+                    showNotification('Error signing in. Please try again.', 'error');
                 });
             }
         });
