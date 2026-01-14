@@ -54,7 +54,9 @@
     @media print {
       body {
         background-color: white !important;
-        font-size: 9pt;
+        font-size: 8.5pt;
+        margin: 0;
+        padding: 0.25in;
       }
       .no-print { display: none !important; }
       .print-only-flex { display: flex !important; }
@@ -73,14 +75,19 @@
         appearance: none;
         padding: 0 !important;
         color: black !important;
-        font-size: 9pt;
+        font-size: 8.5pt;
       }
-      textarea { resize: none !important; }
+      textarea {
+        resize: none !important;
+        min-height: auto !important;
+        height: auto !important;
+      }
       #app-card {
         border-radius: 0;
         position: relative;
         box-shadow: none;
-        padding: 0.5rem !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       #print-stamp {
         display: block;
@@ -104,24 +111,56 @@
       }
       /* Compact table spacing */
       table th, table td {
-        padding: 0.25rem 0.5rem !important;
-        font-size: 9pt;
+        padding: 0.15rem 0.3rem !important;
+        font-size: 8.5pt;
+        line-height: 1.2;
       }
       table thead th {
-        font-size: 8pt;
-        padding: 0.3rem 0.5rem !important;
+        font-size: 7.5pt;
+        padding: 0.2rem 0.3rem !important;
       }
-      /* Reduce section spacing */
+      /* Reduce ALL spacing */
       section {
-        margin-top: 0.5rem !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
       }
-      h1, h2, h3 {
-        margin-top: 0.3rem !important;
-        margin-bottom: 0.3rem !important;
+      h1 {
+        font-size: 14pt !important;
+        margin: 0.2rem 0 !important;
+      }
+      h2 {
+        font-size: 11pt !important;
+        margin: 0.2rem 0 !important;
+      }
+      h3 {
+        font-size: 9pt !important;
+        margin: 0.2rem 0 !important;
+        font-weight: 600;
+      }
+      /* Force attachments to be visible */
+      #attachments {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      #attachments > div {
+        display: flex !important;
+        margin-bottom: 0.1rem !important;
+        padding: 0 !important;
+        background: transparent !important;
       }
       /* Compact logo and header */
-      #logo-section img {
-        max-height: 50px !important;
+      #print-logo {
+        max-height: 40px !important;
+        max-width: 40px !important;
+      }
+      /* Grid layout fixes */
+      .grid {
+        display: block !important;
+      }
+      .lg\:grid-cols-2 > * {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
       }
     }
     /* Custom scrollbar */
@@ -203,19 +242,17 @@
       <div class="p-6 md:p-8 print-p-0">
         
         <!-- START: Print-Only Header -->
-        <div class="hidden print-only-flex mb-4 justify-between items-start border-b border-gray-300 pb-2">
-            <div class="flex items-center gap-3">
-                <img id="print-logo" src="" alt="Logo" class="w-16 h-16 object-contain">
-                <div>
-                    <p class="font-bold text-sm text-gray-900" id="print-company-name">OAK Builders LLC</p>
-                    <p class="text-xs text-gray-600" id="print-company-phone">(202) 888-9895</p>
-                    <p class="text-xs text-gray-600" id="print-company-email">info@oakllc.co</p>
+        <div class="hidden print-only-flex mb-2 justify-between items-center border-b border-gray-400 pb-1" style="font-size: 8pt;">
+            <div class="flex items-center gap-2">
+                <img id="print-logo" src="" alt="Logo" class="w-10 h-10 object-contain">
+                <div style="line-height: 1.2;">
+                    <p class="font-bold text-gray-900" style="font-size: 10pt; margin: 0;" id="print-company-name">OAK Builders LLC</p>
+                    <p class="text-gray-700" style="font-size: 7.5pt; margin: 0;"><span id="print-company-phone">(202) 888-9895</span> • <span id="print-company-email">info@oakllc.co</span></p>
                 </div>
             </div>
-            <div id="print-company-info" class="text-right text-xs text-gray-600">
-                <p id="print-company-address">123 Construction Way</p>
-                <p id="print-company-city">Fairfax, VA 22030, USA</p>
-                <p id="print-company-website">www.oakllc.co</p>
+            <div class="text-right" style="font-size: 7.5pt; line-height: 1.2;">
+                <p style="margin: 0;" id="print-company-address">123 Construction Way</p>
+                <p style="margin: 0;"><span id="print-company-city">Fairfax, VA 22030</span> • <span id="print-company-website">www.oakllc.co</span></p>
             </div>
         </div>
         <!-- END: Print-Only Header -->
@@ -780,12 +817,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveToDrive() {
+        console.log('=== SAVE TO DRIVE START ===');
+        console.log('Auth status:', { isSignedIn: googleAuth.isSignedIn, hasFolderId: !!googleAuth.folderId, hasToken: !!googleAuth.accessToken });
+
         if (!googleAuth.isSignedIn) {
+            console.error('Not signed in');
             showNotification('Please sign in to save to Google Drive', 'warn');
             return;
         }
 
         if (!googleAuth.folderId) {
+            console.error('No folder ID');
             showNotification('Drive folder not initialized. Please sign in again.', 'error');
             signOut();
             return;
@@ -793,14 +835,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             updateSyncStatus('syncing', 'Saving...');
+            console.log('Generating workbook...');
 
             const wb = generateWorkbook();
             const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
             const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            console.log('Workbook generated, size:', blob.size, 'bytes');
 
             // Use timestamp to create unique filename to avoid permission issues
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const fileName = `invoice_${state.number || 'draft'}_${timestamp}.xlsx`;
+            console.log('Filename:', fileName);
 
             const metadata = {
                 name: fileName,
@@ -814,6 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Always create new file to avoid 403 permission errors
             const url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+            console.log('Uploading to:', url);
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -823,30 +869,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: form
             });
 
+            console.log('Response status:', response.status, response.statusText);
+
             if (response.ok) {
                 const result = await response.json();
                 updateSyncStatus('synced', 'Synced');
-                showNotification(`Saved as: ${fileName}`, 'success');
-                console.log('Saved to Drive:', result);
+                showNotification(`✓ Saved as: ${fileName}`, 'success');
+                console.log('✓ Saved to Drive successfully:', result);
             } else {
                 const errorText = await response.text();
-                console.error('Drive API error:', response.status, errorText);
-                throw new Error(`Failed to save to Drive: ${response.status} - ${errorText}`);
+                console.error('✗ Drive API error:', response.status, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
             }
         } catch (error) {
-            console.error('Error saving to Drive:', error);
+            console.error('✗ Error saving to Drive:', error);
             updateSyncStatus('error', 'Sync failed');
-            showNotification(`Error saving to Google Drive: ${error.message}`, 'error');
+            showNotification(`✗ Error: ${error.message}`, 'error');
         }
     }
 
     async function loadFromDrive() {
+        console.log('=== LOAD FROM DRIVE START ===');
+        console.log('Auth status:', { isSignedIn: googleAuth.isSignedIn, hasFolderId: !!googleAuth.folderId });
+
         if (!googleAuth.isSignedIn) {
+            console.error('Not signed in');
             showNotification('Please sign in to load from Google Drive', 'warn');
             return;
         }
 
         if (!googleAuth.folderId) {
+            console.error('No folder ID');
             showNotification('Drive folder not initialized. Please sign in again.', 'error');
             signOut();
             return;
@@ -854,6 +907,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             updateSyncStatus('syncing', 'Loading...');
+            console.log('Fetching files from folder:', googleAuth.folderId);
 
             const response = await gapi.client.drive.files.list({
                 q: `'${googleAuth.folderId}' in parents and trashed=false and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'`,
@@ -862,6 +916,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 orderBy: 'modifiedTime desc',
                 pageSize: 10
             });
+
+            console.log('Files found:', response.result.files?.length || 0);
 
             if (!response.result.files || response.result.files.length === 0) {
                 showNotification('No invoices found in Google Drive', 'warn');
@@ -1437,8 +1493,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = calculateTotal();
         const attachmentCount = state.attachments.length;
 
+        console.log('📧 Creating email draft');
+        console.log('Attachments in state:', state.attachments.length);
+        console.log('Attachment details:', state.attachments.map(a => ({ name: a.filename, size: a.size })));
+
         const attachmentNote = attachmentCount > 0
-            ? `\n\nNote: This ${docType.toLowerCase()} includes ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}.`
+            ? `\n\nNote: This ${docType.toLowerCase()} includes ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}: ${state.attachments.map(a => a.filename).join(', ')}`
             : '';
 
         const subject = encodeURIComponent(`${docType} #${docNumber} from ${companySettings.name}`);
@@ -1472,9 +1532,9 @@ ${companySettings.phone}
         const mailtoLink = `mailto:${toEmail}?subject=${subject}&body=${body}`;
         window.location.href = mailtoLink;
 
-        let instructions = 'Email draft created! Now: (1) Print page to PDF (Ctrl+P), (2) Attach PDF to email';
+        let instructions = `📧 Email opened! ${attachmentCount > 0 ? `${attachmentCount} ATTACHMENT${attachmentCount > 1 ? 'S' : ''} LISTED BELOW! ` : ''}Steps: (1) Print to PDF, (2) Attach PDF to email`;
         if (attachmentCount > 0) {
-            instructions += `, (3) Attach ${attachmentCount} file${attachmentCount > 1 ? 's' : ''} listed on invoice`;
+            instructions += `, (3) ATTACH ${attachmentCount} FILE${attachmentCount > 1 ? 'S' : ''}: ${state.attachments.map(a => a.filename).join(', ')}`;
         }
 
         showNotification(instructions, 'success');
@@ -1482,9 +1542,11 @@ ${companySettings.phone}
         // Also log detailed instructions to console
         console.log(`
 📧 EMAIL INSTRUCTIONS:
+══════════════════════════════════════
 1. Print this page to PDF (Ctrl+P or Cmd+P)
 2. Attach the PDF to the email that just opened
-${attachmentCount > 0 ? `3. Attach the ${attachmentCount} file(s) listed in the Attachments section:\n   ${state.attachments.map(a => `   - ${a.filename}`).join('\n')}` : ''}
+${attachmentCount > 0 ? `3. ATTACH THESE ${attachmentCount} FILE(S):\n${state.attachments.map(a => `   ✓ ${a.filename} (${Math.round(a.size/1024)} KB)`).join('\n')}` : ''}
+══════════════════════════════════════
         `);
     }
 
