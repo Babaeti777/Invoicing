@@ -610,7 +610,18 @@ document.addEventListener('DOMContentLoaded', () => {
             googleAuth.userInfo = JSON.parse(savedUserInfo);
             googleAuth.isSignedIn = true;
             initGapi().then(() => {
+                // Verify that folder ID was successfully retrieved
+                if (!googleAuth.folderId) {
+                    console.warn('Failed to retrieve folder ID, session may be expired');
+                    signOut();
+                    showNotification('Session expired. Please sign in again.', 'warn');
+                    return;
+                }
                 showAuthenticatedUI();
+            }).catch((error) => {
+                console.error('Error restoring session:', error);
+                signOut();
+                showNotification('Session expired. Please sign in again.', 'warn');
             });
         }
     }
@@ -746,6 +757,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (!googleAuth.folderId) {
+            showNotification('Drive folder not initialized. Please sign in again.', 'error');
+            signOut();
+            return;
+        }
+
         try {
             updateSyncStatus('syncing', 'Saving...');
 
@@ -804,6 +821,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadFromDrive() {
         if (!googleAuth.isSignedIn) {
             showNotification('Please sign in to load from Google Drive', 'warn');
+            return;
+        }
+
+        if (!googleAuth.folderId) {
+            showNotification('Drive folder not initialized. Please sign in again.', 'error');
+            signOut();
             return;
         }
 
@@ -883,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function autoLoadFromDrive() {
-        if (!googleAuth.isSignedIn) return;
+        if (!googleAuth.isSignedIn || !googleAuth.folderId) return;
 
         try {
             const response = await gapi.client.drive.files.list({
